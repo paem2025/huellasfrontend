@@ -1,5 +1,7 @@
 // src/pages/IndubitadasComisaria.jsx
 import React, { useState } from "react";
+import { motion } from "framer-motion";
+import FiguraForm from "../components/FiguraForm";
 
 const IndubitadasComisaria = () => {
   const [formData, setFormData] = useState({
@@ -15,6 +17,8 @@ const IndubitadasComisaria = () => {
     comisaria: "",
     jurisdiccion: "",
   });
+
+  const [mostrarFiguraForm, setMostrarFiguraForm] = useState(false);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -52,6 +56,20 @@ const IndubitadasComisaria = () => {
     { name: "jurisdiccion", label: "Jurisdicción" },
   ];
 
+  //Reemplazar formulario Indubitadas por FiguraForm si mostrarFiguraForm es igual a true
+  if (mostrarFiguraForm) {
+    return (
+      <motion.div
+        className="p-6"
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+      >
+          <FiguraForm onClose={() => setMostrarFiguraForm(false)} />
+      </motion.div>
+    );
+  }
+
   return (
     <div className="bg-white p-8 rounded-2xl shadow-lg max-w-xl mx-auto transition hover:shadow-2xl">
       <h2 className="text-2xl font-bold text-purple-700 text-center mb-6">
@@ -72,6 +90,17 @@ const IndubitadasComisaria = () => {
               required
               className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 transition"
             />
+            
+            {/*Boton Nueva Figura*/}
+            {name === "dibujosSuela" && (
+              <button
+                type="button"
+                onClick={() => setMostrarFiguraForm(true)}
+                className="mt-3 bg-gradient-to-r from-purple-600 to-purple-700 text-white py-2 px-4 rounded-lg font-semibold hover:from-purple-700 hover:to-purple-800 transition duration-300 shadow-md"
+              >
+                Nueva Figura
+              </button>
+            )}
           </div>
         ))}
         <button

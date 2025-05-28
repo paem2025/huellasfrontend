@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { FaCheckCircle } from "react-icons/fa";
+import FiguraForm from "../components/FiguraForm";
 
 const Indubitadas = () => {
   const [formData, setFormData] = useState({
@@ -11,6 +12,8 @@ const Indubitadas = () => {
     colores: "",
     dibujosSuela: "",
   });
+  
+  const [mostrarFiguraForm, setMostrarFiguraForm] = useState(false);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -28,6 +31,20 @@ const Indubitadas = () => {
       dibujosSuela: "",
     });
   };
+
+  //Reemplazar formulario Indubitadas por FiguraForm si mostrarFiguraForm es igual a true
+  if (mostrarFiguraForm) {
+    return (
+      <motion.div
+        className="p-6"
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+      >
+        <FiguraForm onClose={() => setMostrarFiguraForm(false)} />
+      </motion.div>
+    );
+  }
 
   return (
     <motion.div
@@ -54,6 +71,18 @@ const Indubitadas = () => {
                 required
                 className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
               />
+
+              {/*Boton Nueva Figura*/}
+              {field === "dibujosSuela" && (
+                <button
+                  type="button"
+                  onClick={() => setMostrarFiguraForm(true)}
+                  className = "mt-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white py-2 px-4 rounded-lg font-semibold hover:from-blue-700 hover:to-blue-800 transition duration-300 shadow-md"
+                >
+                  Nueva Figura
+                </button>
+              )}
+              
             </div>
           ))}
           <button
