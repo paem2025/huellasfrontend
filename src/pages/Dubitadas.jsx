@@ -1,5 +1,7 @@
 // src/pages/Dubitadas.jsx
 import React, { useState } from "react";
+import { motion } from "framer-motion";
+import FiguraForm from "../components/FiguraForm";
 
 const Dubitadas = () => {
   const [formData, setFormData] = useState({
@@ -13,6 +15,8 @@ const Dubitadas = () => {
     cuadrante: "",
     figurasGeometricas: "",
   });
+
+  const [mostrarFiguraForm, setMostrarFiguraForm] = useState(false);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -33,7 +37,7 @@ const Dubitadas = () => {
       figurasGeometricas: "",
     });
   };
-
+  
   const renderInput = (name, label, placeholder = "") => (
     <div key={name}>
       <label className="block text-sm font-semibold mb-1">{label}:</label>
@@ -48,6 +52,20 @@ const Dubitadas = () => {
       />
     </div>
   );
+
+  //Reemplazar formulario Dubitadas por FiguraForm si mostrarFiguraForm es igual a true
+  if (mostrarFiguraForm) {
+    return (
+      <motion.div
+        className="p-6"
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+      >
+          <FiguraForm onClose={() => setMostrarFiguraForm(false)} />
+      </motion.div>
+    );
+  }
 
   return (
     <div className="bg-white p-8 rounded-2xl shadow-lg max-w-xl mx-auto transition hover:shadow-2xl">
@@ -82,6 +100,15 @@ const Dubitadas = () => {
         {renderInput("colores", "Colores", "Ej: Rojo, Azul")}
         {renderInput("dibujosSuela", "Dibujos de la Suela", "Ej: Ondas, Puntas")}
 
+        {/*Boton Nueva Figura*/}
+        <button
+          type="button"
+          onClick={() => setMostrarFiguraForm(true)}
+          className="mt-3 bg-gradient-to-r from-green-600 to-green-700 text-white py-2 px-4 rounded-lg font-semibold hover:from-green-700 hover:to-green-800 transition duration-300 shadow-md"
+        >
+          Nueva Figura
+        </button>
+
         <hr className="my-4" />
 
         <div>
@@ -104,6 +131,15 @@ const Dubitadas = () => {
         </div>
 
         {renderInput("figurasGeometricas", "Figuras Geométricas", "Ej: Círculo, Cuadrado")}
+
+        {/*Boton Nueva Figura*/}
+        <button
+          type="button"
+          onClick={() => setMostrarFiguraForm(true)}
+          className="mt-3 bg-gradient-to-r from-green-600 to-green-700 text-white py-2 px-4 rounded-lg font-semibold hover:from-green-700 hover:to-green-800 transition duration-300 shadow-md"
+        >
+          Nueva Figura
+        </button>
 
         <button
           type="submit"

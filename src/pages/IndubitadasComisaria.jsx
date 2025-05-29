@@ -56,7 +56,7 @@ const IndubitadasComisaria = () => {
     { name: "jurisdiccion", label: "Jurisdicción" },
   ];
 
-  //Reemplazar formulario Indubitadas por FiguraForm si mostrarFiguraForm es igual a true
+  //Reemplazar formulario IndubitadasComisaria por FiguraForm si mostrarFiguraForm es igual a true
   if (mostrarFiguraForm) {
     return (
       <motion.div
