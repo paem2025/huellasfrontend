@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import FiguraForm from "../components/FiguraForm";
+import FigurasChecklist from "../components/FigurasChecklist";
 
 const IndubitadasComisaria = () => {
   const [formData, setFormData] = useState({
@@ -10,7 +11,12 @@ const IndubitadasComisaria = () => {
     talle: "",
     medidas: "",
     colores: "",
-    dibujosSuela: "",
+    //Arrays que guardan las figuras de cada cuadrante
+    figurasSuperiorIzquierdo: [],
+    figurasSuperiorDerecho: [],
+    figurasCentral: [],
+    figurasInferiorDerecho: [],
+    figurasInferiorIzquierdo: [],
     nombre: "",
     apellido: "",
     dni: "",
@@ -33,7 +39,12 @@ const IndubitadasComisaria = () => {
       talle: "",
       medidas: "",
       colores: "",
-      dibujosSuela: "",
+      figurasSuperiorIzquierdo: [],
+      figurasSuperiorDerecho: [],
+      figurasCentral: [],
+      figurasInferiorDerecho: [],
+      figurasInferiorIzquierdo: [],
+    nombre: "",
       nombre: "",
       apellido: "",
       dni: "",
@@ -48,13 +59,15 @@ const IndubitadasComisaria = () => {
     { name: "talle", label: "Talle" },
     { name: "medidas", label: "Medidas (Alto x Ancho)" },
     { name: "colores", label: "Colores" },
-    { name: "dibujosSuela", label: "Dibujos de la Suela" },
     { name: "nombre", label: "Nombre" },
     { name: "apellido", label: "Apellido" },
     { name: "dni", label: "DNI" },
     { name: "comisaria", label: "Comisaría" },
     { name: "jurisdiccion", label: "Jurisdicción" },
   ];
+
+  //Array de figuras de ejemplo, cambiar por el array real traido por el endpoint
+  const exampleFigures = ["Figura1", "Figura2", "Figura3"];
 
   //Reemplazar formulario IndubitadasComisaria por FiguraForm si mostrarFiguraForm es igual a true
   if (mostrarFiguraForm) {
@@ -90,19 +103,53 @@ const IndubitadasComisaria = () => {
               required
               className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 transition"
             />
-            
-            {/*Boton Nueva Figura*/}
-            {name === "dibujosSuela" && (
-              <button
-                type="button"
-                onClick={() => setMostrarFiguraForm(true)}
-                className="mt-3 bg-gradient-to-r from-purple-600 to-purple-700 text-white py-2 px-4 rounded-lg font-semibold hover:from-purple-700 hover:to-purple-800 transition duration-300 shadow-md"
-              >
-                Nueva Figura
-              </button>
-            )}
           </div>
         ))}
+
+        {/* Seleccionaon de figuras por cuadrante */}
+        <div>
+          <label className = "block text-sm font-semibold mb-3 capitalize">Figuras de la Suela:</label>
+          <FigurasChecklist 
+            title="Cuadrante Superior Izquierdo" 
+            figures={exampleFigures} 
+            selectedFigures={formData.figurasSuperiorIzquierdo} 
+            onChange={(selectedFigures) => setFormData(prev => ({ ...prev, figurasSuperiorIzquierdo: selectedFigures}))}
+          />
+          <FigurasChecklist 
+            title="Cuadrante Superior Derecho" 
+            figures={exampleFigures} 
+            selectedFigures={formData.figurasSuperiorDerecho} 
+            onChange={(selectedFigures) => setFormData(prev => ({ ...prev, figurasSuperiorDerecho: selectedFigures}))} 
+          />
+          <FigurasChecklist 
+            title="Cuadrante Central" 
+            figures={exampleFigures} 
+            selectedFigures={formData.figurasCentral} 
+            onChange={(selectedFigures) => setFormData(prev => ({ ...prev, figurasCentral: selectedFigures}))} 
+          />
+          <FigurasChecklist 
+            title="Cuadrante Inferior Izquierdo" 
+            figures={exampleFigures} 
+            selectedFigures={formData.figurasInferiorIzquierdo} 
+            onChange={(selectedFigures) => setFormData(prev => ({ ...prev, figurasInferiorIzquierdo: selectedFigures}))} 
+          />
+          <FigurasChecklist 
+            title="Cuadrante Inferior Derecho" 
+            figures={exampleFigures} 
+            selectedFigures={formData.figurasInferiorDerecho} 
+            onChange={(selectedFigures) => setFormData(prev => ({ ...prev, figurasInferiorDerecho: selectedFigures}))} 
+          />
+
+          {/* Botón Nueva Figura */}
+          <button
+            type="button"
+            onClick={() => setMostrarFiguraForm(true)}
+            className="mt-3 bg-gradient-to-r from-purple-600 to-purple-700 text-white py-2 px-4 rounded-lg font-semibold hover:from-purple-700 hover:to-purple-800 transition duration-300 shadow-md"
+          >
+            Nueva Figura
+          </button>
+        </div>
+
         <button
           type="submit"
           className="w-full bg-gradient-to-r from-purple-600 to-purple-700 text-white py-3 rounded-lg font-semibold hover:from-purple-700 hover:to-purple-800 transition duration-300 shadow-md"
