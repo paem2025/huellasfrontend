@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import FiguraForm from "../components/FiguraForm";
-import FigurasChecklist from "../components/FigurasChecklist";
+import FigurasDropdown from "../components/FigurasDropdown";
 
 const IndubitadasComisaria = () => {
   const [formData, setFormData] = useState({
@@ -109,34 +109,34 @@ const IndubitadasComisaria = () => {
         {/* Seleccionaon de figuras por cuadrante */}
         <div>
           <label className = "block text-sm font-semibold mb-3 capitalize">Figuras de la Suela:</label>
-          <FigurasChecklist 
+          <FigurasDropdown
             title="Cuadrante Superior Izquierdo" 
-            figures={exampleFigures} 
-            selectedFigures={formData.figurasSuperiorIzquierdo} 
+            options={exampleFigures} 
+            selectedOptions={formData.figurasSuperiorIzquierdo} 
             onChange={(selectedFigures) => setFormData(prev => ({ ...prev, figurasSuperiorIzquierdo: selectedFigures}))}
           />
-          <FigurasChecklist 
+          <FigurasDropdown
             title="Cuadrante Superior Derecho" 
-            figures={exampleFigures} 
-            selectedFigures={formData.figurasSuperiorDerecho} 
+            options={exampleFigures} 
+            selectedOptions={formData.figurasSuperiorDerecho} 
             onChange={(selectedFigures) => setFormData(prev => ({ ...prev, figurasSuperiorDerecho: selectedFigures}))} 
           />
-          <FigurasChecklist 
+          <FigurasDropdown
             title="Cuadrante Central" 
-            figures={exampleFigures} 
-            selectedFigures={formData.figurasCentral} 
+            options={exampleFigures} 
+            selectedOptions={formData.figurasCentral} 
             onChange={(selectedFigures) => setFormData(prev => ({ ...prev, figurasCentral: selectedFigures}))} 
           />
-          <FigurasChecklist 
+          <FigurasDropdown
             title="Cuadrante Inferior Izquierdo" 
-            figures={exampleFigures} 
-            selectedFigures={formData.figurasInferiorIzquierdo} 
+            options={exampleFigures} 
+            selectedOptions={formData.figurasInferiorIzquierdo} 
             onChange={(selectedFigures) => setFormData(prev => ({ ...prev, figurasInferiorIzquierdo: selectedFigures}))} 
           />
-          <FigurasChecklist 
+          <FigurasDropdown
             title="Cuadrante Inferior Derecho" 
-            figures={exampleFigures} 
-            selectedFigures={formData.figurasInferiorDerecho} 
+            options={exampleFigures} 
+            selectedOptions={formData.figurasInferiorDerecho} 
             onChange={(selectedFigures) => setFormData(prev => ({ ...prev, figurasInferiorDerecho: selectedFigures}))} 
           />
 
