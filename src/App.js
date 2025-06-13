@@ -17,13 +17,14 @@ import Dubitadas from "./pages/Dubitadas";
 import Busqueda from "./pages/Busqueda";
 import Login from "./pages/Login";
 import Registro from "./pages/Registro";
+import FigurasForm from "./pages/FigurasForm";
 
 function App() {
   return (
     <Router>
       <AuthProvider>
         <div className="min-h-screen bg-gradient-to-r from-blue-50 to-blue-100 p-4">
-          <div className="max-w-4xl mx-auto">
+          <div className="max-w-6xl mx-auto w-full">
             <h1 className="text-3xl font-extrabold text-center mb-6 text-blue-800">
               Sistema de Huellas de Calzado
             </h1>
@@ -44,7 +45,6 @@ const Navigation = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Ocultar navegación en login y registro
   if (!isAuthenticated && ["/login", "/registro"].includes(location.pathname)) {
     return null;
   }
@@ -58,6 +58,7 @@ const Navigation = () => {
             { to: "/indubitadas-comisaria", label: "Indubitadas Comisarías" },
             { to: "/dubitadas", label: "Dubitadas" },
             { to: "/busqueda", label: "Búsqueda" },
+            // { to: "/figuras", label: "Figuras" }, // ← Eliminado del menú
           ].map(({ to, label }) => (
             <NavLink
               key={to}
@@ -106,7 +107,6 @@ const AnimatedRoutes = () => {
           <Route path="/login" element={<Login />} />
           <Route path="/registro" element={<Registro />} />
 
-          {/* Rutas protegidas */}
           <Route
             path="/indubitadas"
             element={
@@ -139,8 +139,15 @@ const AnimatedRoutes = () => {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/figuras"
+            element={
+              <ProtectedRoute allowedRoles={["admin", "operador"]}>
+                <FigurasForm />
+              </ProtectedRoute>
+            }
+          />
 
-          {/* Página no encontrada */}
           <Route
             path="*"
             element={
