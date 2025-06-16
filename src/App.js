@@ -17,6 +17,7 @@ import Dubitadas from "./pages/Dubitadas";
 import Busqueda from "./pages/Busqueda";
 import Login from "./pages/Login";
 import Registro from "./pages/Registro";
+import ListadoCalzados from "./pages/ListadoCalzados";
 
 function App() {
   return (
@@ -58,6 +59,7 @@ const Navigation = () => {
             { to: "/indubitadas-comisaria", label: "Indubitadas Comisarías" },
             { to: "/dubitadas", label: "Dubitadas" },
             { to: "/busqueda", label: "Búsqueda" },
+            { to: "/listado-calzados", label: "Listado de Calzados" }
           ].map(({ to, label }) => (
             <NavLink
               key={to}
@@ -139,7 +141,14 @@ const AnimatedRoutes = () => {
               </ProtectedRoute>
             }
           />
-
+          <Route
+            path="/listado-calzados" // Nueva ruta para el listado
+            element={
+              <ProtectedRoute allowedRoles={["admin", "operador"]}>
+                <ListadoCalzados />
+              </ProtectedRoute>
+            }
+          />
           {/* Página no encontrada */}
           <Route
             path="*"
