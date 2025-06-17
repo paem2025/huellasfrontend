@@ -1,7 +1,6 @@
-// src/pages/ListadoCalzados.jsx
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { FiEdit, FiTrash2, FiEye } from "react-icons/fi";
+import { FiEdit, FiTrash2 } from "react-icons/fi";
 
 const ListadoCalzados = () => {
   // Estado para filtros y búsqueda
@@ -15,7 +14,7 @@ const ListadoCalzados = () => {
       marca: "Nike",
       modelo: "Air Max",
       talle: "42",
-      medidas: "28cm x 10cm",
+      medidas: "28cm",
       dibujosSuela: "Ondas, Puntos, Lineas",
       colores: "Blanco/Negro",
       categoria: "Deportivo",
@@ -26,7 +25,7 @@ const ListadoCalzados = () => {
       marca: "Adidas",
       modelo: "Superstar",
       talle: "40",
-      medidas: "26cm x 9cm",
+      medidas: "26cm",
       dibujosSuela: "Estrellas, Rayas",
       colores: "Negro",
       categoria: "Urbano",
@@ -37,7 +36,7 @@ const ListadoCalzados = () => {
       marca: "Puma",
       modelo: "RS-X",
       talle: "39",
-      medidas: "25cm x 9cm",
+      medidas: "25cm",
       dibujosSuela: "Geométrico, Cuadrados",
       colores: "Rojo/Blanco",
       categoria: "Casual",
@@ -170,9 +169,6 @@ const ListadoCalzados = () => {
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap flex space-x-2">
-                    <button className="text-blue-600 hover:text-blue-900">
-                      <FiEye size={18} />
-                    </button>
                     <button className="text-yellow-600 hover:text-yellow-900">
                       <FiEdit size={18} />
                     </button>
