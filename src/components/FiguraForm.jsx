@@ -6,6 +6,8 @@ const API_URL = "http://127.0.0.1:5000/formas/";
 const FiguraForm = ({ onClose }) => {
     const [figura, setFigura] = useState("");
     const [figuras, setFiguras] = useState([]);
+    const [editId, setEditId] = useState(null);
+    const [editNombre, setEditNombre] = useState("");
 
     const handleChange = (e) => {
         setFigura(e.target.value);
@@ -29,19 +31,40 @@ const FiguraForm = ({ onClose }) => {
     const handleSubmit = (e) => {
         e.preventDefault();
 
-        const newFigura = {
-            nombre: figura,
-        };
         axios
-            .post(API_URL, newFigura)
-            .then((response) => {
+            .post(API_URL, {nombre: figura})
+            .then(() => {
                 alert("Figura cargada correctamente")
                 setFigura("");
                 fetchFiguras();
             })
-            .catch((error) => {
+            .catch(() => {
                 alert("Error al cargar figura")
             })
+    };
+
+    const handleEditClick = (id, nombre) => {
+        setEditId(id);
+        setEditNombre(nombre);
+    };
+
+    const handleSaveEdit = () => {
+        axios
+            .put(`${API_URL}${editId}`, { nombre: editNombre })
+            .then(() => {
+                alert("Figura editada correctamente")
+                setEditId(null);
+                setEditNombre("");
+                fetchFiguras();
+            })
+            .catch(() => {
+                alert ("Error al editar figura")
+            });
+    };
+
+    const handleCancelEdit = () => {
+        setEditId(null);
+        setEditNombre("");
     };
 
     return (
@@ -83,15 +106,55 @@ const FiguraForm = ({ onClose }) => {
             </form>
             {/* Listado de figuras */}
             <div className="bg-white p-8 rounded-2xl shadow-xl max-w-lg mx-auto mt-6">
-                <h2 className="text-xl font-semibold mb-4">Figuras cargadas:</h2>
+                <h2 className="text-sm font-semibold mb-4">Figuras cargadas:</h2>
                 {figuras.length === 0 && <p>No hay figuras cargadas</p>}
 
                 {figuras.length > 0 && (
-                <ul className="list-disc list-inside">
-                    {figuras.map((f) => (
-                    <li key={f.id_forma}>{f.nombre}</li>
-                    ))}
-                </ul>
+                    <ul className="list-disc list-inside">
+                        {figuras.map((f) => (
+                            <li key={f.id_forma} className="flex items-center justify-between py-1 border-b last:border-b-0">
+
+                            {/* Modo editar figura*/}
+                            {editId === f.id_forma ? (
+                            <>
+                                <input
+                                type="text"
+                                value={editNombre}
+                                onChange={(e) => setEditNombre(e.target.value)}
+                                className="border p-1 rounded"
+                                />
+                                <div className="space-x-2">
+                                    <button
+                                        onClick={handleSaveEdit}
+                                        className="bg-blue-600 text-white px-2 py-1 rounded hover:bg-blue-700 mr-2"
+                                        type="button"
+                                    >
+                                        Guardar
+                                    </button>
+                                    <button
+                                        onClick={handleCancelEdit}
+                                        className="bg-gray-400 text-white px-2 py-1 rounded hover:bg-gray-500"
+                                        type="button"
+                                    >
+                                        Cancelar
+                                    </button>
+                                </div>
+                            </>
+                            ) : (
+                            <>
+                                <span>{f.nombre}</span>
+                                <button
+                                onClick={() => handleEditClick(f.id_forma, f.nombre)}
+                                className="bg-blue-600 text-white px-2 py-1 rounded hover:bg-blue-700"
+                                type="button"
+                                >
+                                Editar
+                                </button>
+                            </>
+                            )}
+                        </li>
+                        ))}
+                    </ul>
                 )}
             </div>
         </div>
