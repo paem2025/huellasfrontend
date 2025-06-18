@@ -1,7 +1,11 @@
 // src/pages/Dubitadas.jsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import FiguraForm from "../components/FiguraForm";
+import FigurasDropdown from "../components/FigurasDropdown";
+import axios from "axios";
+
+const API_URL_FORMAS = "http://127.0.0.1:5000/formas/";
 
 const Dubitadas = () => {
   const [formData, setFormData] = useState({
@@ -11,9 +15,12 @@ const Dubitadas = () => {
     talle: "",
     medidas: "",
     colores: "",
-    dibujosSuela: "",
-    cuadrante: "",
-    figurasGeometricas: "",
+    //Arrays que guardan las figuras de cada cuadrante
+    figurasSuperiorIzquierdo: [],
+    figurasSuperiorDerecho: [],
+    figurasCentral: [],
+    figurasInferiorDerecho: [],
+    figurasInferiorIzquierdo: [],
   });
 
   const [mostrarFiguraForm, setMostrarFiguraForm] = useState(false);
@@ -32,11 +39,28 @@ const Dubitadas = () => {
       talle: "",
       medidas: "",
       colores: "",
-      dibujosSuela: "",
-      cuadrante: "",
-      figurasGeometricas: "",
+      figurasSuperiorIzquierdo: [],
+      figurasSuperiorDerecho: [],
+      figurasCentral: [],
+      figurasInferiorDerecho: [],
+      figurasInferiorIzquierdo: [],
     });
   };
+
+  //Estado para figuras
+    const [figuras, setFiguras] = useState([]);
+  
+    useEffect(() => {
+      axios
+        .get(API_URL_FORMAS)
+        .then((response) => {
+          const nombresFiguras = response.data.map(f => f.nombre);
+          setFiguras(nombresFiguras);
+        })
+        .catch((error) => {
+          console.error("Error al obtener figuras:", error);
+        });
+    }, []);
   
   const renderInput = (name, label, placeholder = "") => (
     <div key={name}>
@@ -98,48 +122,50 @@ const Dubitadas = () => {
         {renderInput("talle", "Talle")}
         {renderInput("medidas", "Medidas", "Ej: 10cm x 5cm")}
         {renderInput("colores", "Colores", "Ej: Rojo, Azul")}
-        {renderInput("dibujosSuela", "Dibujos de la Suela", "Ej: Ondas, Puntas")}
 
-        {/*Boton Nueva Figura*/}
-        <button
-          type="button"
-          onClick={() => setMostrarFiguraForm(true)}
-          className="mt-3 bg-gradient-to-r from-green-600 to-green-700 text-white py-2 px-4 rounded-lg font-semibold hover:from-green-700 hover:to-green-800 transition duration-300 shadow-md"
-        >
-          Nueva Figura
-        </button>
-
-        <hr className="my-4" />
-
+        {/* Seleccionaon de figuras por cuadrante */}
         <div>
-          <label className="block text-sm font-semibold mb-1">Cuadrante del calzado:</label>
-          <select
-            name="cuadrante"
-            value={formData.cuadrante}
-            onChange={handleChange}
-            required
-            className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400"
+          <label className = "block text-sm font-semibold mb-3 capitalize">Figuras de la Suela:</label>
+          <FigurasDropdown
+            title="Cuadrante Superior Izquierdo" 
+            options={figuras} 
+            selectedOptions={formData.figurasSuperiorIzquierdo} 
+            onChange={(selectedFigures) => setFormData(prev => ({ ...prev, figurasSuperiorIzquierdo: selectedFigures}))}
+          />
+          <FigurasDropdown
+            title="Cuadrante Superior Derecho" 
+            options={figuras} 
+            selectedOptions={formData.figurasSuperiorDerecho} 
+            onChange={(selectedFigures) => setFormData(prev => ({ ...prev, figurasSuperiorDerecho: selectedFigures}))} 
+          />
+          <FigurasDropdown
+            title="Cuadrante Central" 
+            options={figuras} 
+            selectedOptions={formData.figurasCentral} 
+            onChange={(selectedFigures) => setFormData(prev => ({ ...prev, figurasCentral: selectedFigures}))} 
+          />
+          <FigurasDropdown
+            title="Cuadrante Inferior Izquierdo" 
+            options={figuras} 
+            selectedOptions={formData.figurasInferiorIzquierdo} 
+            onChange={(selectedFigures) => setFormData(prev => ({ ...prev, figurasInferiorIzquierdo: selectedFigures}))} 
+          />
+          <FigurasDropdown
+            title="Cuadrante Inferior Derecho" 
+            options={figuras} 
+            selectedOptions={formData.figurasInferiorDerecho} 
+            onChange={(selectedFigures) => setFormData(prev => ({ ...prev, figurasInferiorDerecho: selectedFigures}))} 
+          />
+
+          {/* Botón Nueva Figura */}
+          <button
+            type="button"
+            onClick={() => setMostrarFiguraForm(true)}
+            className="mt-3 bg-gradient-to-r from-green-600 to-green-700 text-white py-2 px-4 rounded-lg font-semibold hover:from-green-700 hover:to-green-800 transition duration-300 shadow-md"
           >
-            <option value="">Seleccionar categoría</option>
-            <option value="Superior Izquierdo">Superior Izquierdo</option>
-            <option value="Superior Derecho">Superior Derecho</option>
-            <option value="Central">Central</option>
-            <option value="Inferior Izquierdo">Inferior Izquierdo</option>
-            <option value="Inferior Derecho">Inferior Derecho</option>
-            
-          </select>
+            Nueva Figura
+          </button>
         </div>
-
-        {renderInput("figurasGeometricas", "Figuras Geométricas", "Ej: Círculo, Cuadrado")}
-
-        {/*Boton Nueva Figura*/}
-        <button
-          type="button"
-          onClick={() => setMostrarFiguraForm(true)}
-          className="mt-3 bg-gradient-to-r from-green-600 to-green-700 text-white py-2 px-4 rounded-lg font-semibold hover:from-green-700 hover:to-green-800 transition duration-300 shadow-md"
-        >
-          Nueva Figura
-        </button>
 
         <button
           type="submit"

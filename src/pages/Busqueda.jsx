@@ -1,6 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import FiguraForm from "../components/FiguraForm";
+import FigurasDropdown from "../components/FigurasDropdown";
+import axios from "axios";
+
+const API_URL_FORMAS = "http://127.0.0.1:5000/formas/";
 
 const Busqueda = () => {
   const [searchCriteria, setSearchCriteria] = useState({
@@ -8,8 +12,11 @@ const Busqueda = () => {
     marca: "",
     modelo: "",
     talle: "",
-    cuadrante: "",
-    figurasGeometricas: "",
+    figurasSuperiorIzquierdo: [],
+    figurasSuperiorDerecho: [],
+    figurasCentral: [],
+    figurasInferiorDerecho: [],
+    figurasInferiorIzquierdo: [],
   });
 
   const [mostrarFiguraForm, setMostrarFiguraForm] = useState(false);
@@ -32,8 +39,11 @@ const Busqueda = () => {
         marca: "Nike",
         modelo: "Air Max",
         talle: "42",
-        cuadrante: "Superior Izquierdo",
-        figurasGeometricas: "Círculo, Triángulo",
+        figurasSuperiorIzquierdo: ["Círculo", "Triángulo"],
+        figurasSuperiorDerecho: [],
+        figurasCentral: [],
+        figurasInferiorIzquierdo: [],
+        figurasInferiorDerecho: [],
       },
       {
         id: 2,
@@ -41,11 +51,29 @@ const Busqueda = () => {
         marca: "Adidas",
         modelo: "Superstar",
         talle: "40",
-        cuadrante: "Inferior Derecho",
-        figurasGeometricas: "Rectángulo, Cuadrado",
+        figurasSuperiorIzquierdo: [],
+        figurasSuperiorDerecho: ["Triangulo"],
+        figurasCentral: [],
+        figurasInferiorIzquierdo: [],
+        figurasInferiorDerecho: ["Rectángulo", "Cuadrado"],
       },
     ]);
   };
+
+  //Estado para figuras
+  const [figuras, setFiguras] = useState([]);
+
+  useEffect(() => {
+    axios
+      .get(API_URL_FORMAS)
+      .then((response) => {
+        const nombresFiguras = response.data.map(f => f.nombre);
+        setFiguras(nombresFiguras);
+      })
+      .catch((error) => {
+        console.error("Error al obtener figuras:", error);
+      });
+  }, []);
 
   //Reemplazar formulario Busqueda por FiguraForm si mostrarFiguraForm es igual a true
   if (mostrarFiguraForm) {
@@ -99,43 +127,52 @@ const Busqueda = () => {
         ))}
 
         <div>
-          <label className="block text-sm font-semibold mb-1">Cuadrante del calzado:</label>
-          <select
-            name="cuadrante"
-            value={searchCriteria.cuadrante}
-            onChange={handleChange}
-            className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
-          >
-            <option value="">Seleccionar categoría</option>
-            <option value="Superior Izquierdo">Superior Izquierdo</option>
-            <option value="Superior Derecho">Superior Derecho</option>
-            <option value="Central">Central</option>
-            <option value="Inferior Izquierdo">Inferior Izquierdo</option>
-            <option value="Inferior Derecho">Inferior Derecho</option>
-            
-          </select>
-        </div>
+          <label className="block text-sm font-semibold mb-3">Figuras por Cuadrante:</label>
 
-        <div>
-          <label className="block text-sm font-semibold mb-1">Figuras Geométricas:</label>
-          <input
-            type="text"
-            name="figurasGeometricas"
-            value={searchCriteria.figurasGeometricas}
-            onChange={handleChange}
-            placeholder="Ej: Círculo, Cuadrado"
-            className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+          <FigurasDropdown
+            title="Cuadrante Superior Izquierdo"
+            options={figuras}
+            selectedOptions={searchCriteria.figurasSuperiorIzquierdo}
+            onChange={(selectedFigures) => setSearchCriteria((prev) => ({...prev, figurasSuperiorIzquierdo: selectedFigures,}))}
           />
 
-          {/*Boton Nueva Figura*/}
+          <FigurasDropdown
+            title="Cuadrante Superior Derecho"
+            options={figuras}
+            selectedOptions={searchCriteria.figurasSuperiorDerecho}
+            onChange={(selectedFigures) => setSearchCriteria((prev) => ({...prev, figurasSuperiorDerecho: selectedFigures,}))}
+          />
+
+          <FigurasDropdown
+            title="Cuadrante Central"
+            options={figuras}
+            selectedOptions={searchCriteria.figurasCentral}
+            onChange={(selectedFigures) =>
+              setSearchCriteria((prev) => ({...prev,figurasCentral: selectedFigures,}))}
+          />
+
+          <FigurasDropdown
+            title="Cuadrante Inferior Izquierdo"
+            options={figuras}
+            selectedOptions={searchCriteria.figurasInferiorIzquierdo}
+            onChange={(selectedFigures) => setSearchCriteria((prev) => ({...prev, figurasInferiorIzquierdo: selectedFigures,}))}
+          />
+
+          <FigurasDropdown
+            title="Cuadrante Inferior Derecho"
+            options={figuras}
+            selectedOptions={searchCriteria.figurasInferiorDerecho}
+            onChange={(selectedFigures) => setSearchCriteria((prev) => ({...prev, figurasInferiorDerecho: selectedFigures,}))}
+          />
+
+          {/* Botón Nueva Figura */}
           <button
             type="button"
             onClick={() => setMostrarFiguraForm(true)}
-            className = "mt-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white py-2 px-4 rounded-lg font-semibold hover:from-blue-700 hover:to-blue-800 transition duration-300 shadow-md"
+            className="mt-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white py-2 px-4 rounded-lg font-semibold hover:from-blue-700 hover:to-blue-800 transition duration-300 shadow-md"
           >
             Nueva Figura
           </button>
-          
         </div>
 
         <button
@@ -157,8 +194,11 @@ const Busqueda = () => {
                 <p><strong>Marca:</strong> {result.marca}</p>
                 <p><strong>Modelo:</strong> {result.modelo}</p>
                 <p><strong>Talle:</strong> {result.talle}</p>
-                <p><strong>Cuadrante:</strong> {result.cuadrante}</p>
-                <p><strong>Figuras Geométricas:</strong> {result.figurasGeometricas}</p>
+                <p><strong>Superior Izquierdo:</strong> {result.figurasSuperiorIzquierdo?.join(", ")}</p>
+                <p><strong>Superior Derecho:</strong> {result.figurasSuperiorDerecho?.join(", ")}</p>
+                <p><strong>Central:</strong> {result.figurasCentral?.join(", ")}</p>
+                <p><strong>Inferior Izquierdo:</strong> {result.figurasInferiorIzquierdo?.join(", ")}</p>
+                <p><strong>Inferior Derecho:</strong> {result.figurasInferiorDerecho?.join(", ")}</p>
               </div>
             ))}
           </div>

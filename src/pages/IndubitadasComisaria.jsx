@@ -1,8 +1,11 @@
 // src/pages/IndubitadasComisaria.jsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import FiguraForm from "../components/FiguraForm";
 import FigurasDropdown from "../components/FigurasDropdown";
+import axios from "axios";
+
+const API_URL_FORMAS = "http://127.0.0.1:5000/formas/";
 
 const IndubitadasComisaria = () => {
   const [formData, setFormData] = useState({
@@ -44,7 +47,7 @@ const IndubitadasComisaria = () => {
       figurasCentral: [],
       figurasInferiorDerecho: [],
       figurasInferiorIzquierdo: [],
-    nombre: "",
+      nombre: "",
       nombre: "",
       apellido: "",
       dni: "",
@@ -52,6 +55,21 @@ const IndubitadasComisaria = () => {
       jurisdiccion: "",
     });
   };
+
+  //Estado para figuras
+  const [figuras, setFiguras] = useState([]);
+
+  useEffect(() => {
+    axios
+      .get(API_URL_FORMAS)
+      .then((response) => {
+        const nombresFiguras = response.data.map(f => f.nombre);
+        setFiguras(nombresFiguras);
+      })
+      .catch((error) => {
+        console.error("Error al obtener figuras:", error);
+      });
+  }, []);
 
   const fields = [
     { name: "marca", label: "Marca" },
@@ -65,9 +83,6 @@ const IndubitadasComisaria = () => {
     { name: "comisaria", label: "Comisaría" },
     { name: "jurisdiccion", label: "Jurisdicción" },
   ];
-
-  //Array de figuras de ejemplo, cambiar por el array real traido por el endpoint
-  const exampleFigures = ["Figura1", "Figura2", "Figura3"];
 
   //Reemplazar formulario IndubitadasComisaria por FiguraForm si mostrarFiguraForm es igual a true
   if (mostrarFiguraForm) {
@@ -111,31 +126,31 @@ const IndubitadasComisaria = () => {
           <label className = "block text-sm font-semibold mb-3 capitalize">Figuras de la Suela:</label>
           <FigurasDropdown
             title="Cuadrante Superior Izquierdo" 
-            options={exampleFigures} 
+            options={figuras} 
             selectedOptions={formData.figurasSuperiorIzquierdo} 
             onChange={(selectedFigures) => setFormData(prev => ({ ...prev, figurasSuperiorIzquierdo: selectedFigures}))}
           />
           <FigurasDropdown
             title="Cuadrante Superior Derecho" 
-            options={exampleFigures} 
+            options={figuras} 
             selectedOptions={formData.figurasSuperiorDerecho} 
             onChange={(selectedFigures) => setFormData(prev => ({ ...prev, figurasSuperiorDerecho: selectedFigures}))} 
           />
           <FigurasDropdown
             title="Cuadrante Central" 
-            options={exampleFigures} 
+            options={figuras} 
             selectedOptions={formData.figurasCentral} 
             onChange={(selectedFigures) => setFormData(prev => ({ ...prev, figurasCentral: selectedFigures}))} 
           />
           <FigurasDropdown
             title="Cuadrante Inferior Izquierdo" 
-            options={exampleFigures} 
+            options={figuras} 
             selectedOptions={formData.figurasInferiorIzquierdo} 
             onChange={(selectedFigures) => setFormData(prev => ({ ...prev, figurasInferiorIzquierdo: selectedFigures}))} 
           />
           <FigurasDropdown
             title="Cuadrante Inferior Derecho" 
-            options={exampleFigures} 
+            options={figuras} 
             selectedOptions={formData.figurasInferiorDerecho} 
             onChange={(selectedFigures) => setFormData(prev => ({ ...prev, figurasInferiorDerecho: selectedFigures}))} 
           />
