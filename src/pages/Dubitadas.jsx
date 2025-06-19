@@ -50,7 +50,7 @@ const Dubitadas = () => {
   //Estado para figuras
     const [figuras, setFiguras] = useState([]);
   
-    useEffect(() => {
+    const fetchFiguras = () => {
       axios
         .get(API_URL_FORMAS)
         .then((response) => {
@@ -60,8 +60,11 @@ const Dubitadas = () => {
         .catch((error) => {
           console.error("Error al obtener figuras:", error);
         });
+    };
+    useEffect(() => {
+      fetchFiguras();
     }, []);
-  
+      
   const renderInput = (name, label, placeholder = "") => (
     <div key={name}>
       <label className="block text-sm font-semibold mb-1">{label}:</label>
@@ -86,7 +89,10 @@ const Dubitadas = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
       >
-          <FiguraForm onClose={() => setMostrarFiguraForm(false)} />
+        <FiguraForm 
+          onClose={() => setMostrarFiguraForm(false)} 
+          onUpdateFiguras={fetchFiguras}
+        />
       </motion.div>
     );
   }

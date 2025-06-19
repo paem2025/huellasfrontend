@@ -59,7 +59,7 @@ const IndubitadasComisaria = () => {
   //Estado para figuras
   const [figuras, setFiguras] = useState([]);
 
-  useEffect(() => {
+  const fetchFiguras = () => {
     axios
       .get(API_URL_FORMAS)
       .then((response) => {
@@ -69,6 +69,9 @@ const IndubitadasComisaria = () => {
       .catch((error) => {
         console.error("Error al obtener figuras:", error);
       });
+  };
+  useEffect(() => {
+    fetchFiguras();
   }, []);
 
   const fields = [
@@ -93,7 +96,10 @@ const IndubitadasComisaria = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
       >
-          <FiguraForm onClose={() => setMostrarFiguraForm(false)} />
+        <FiguraForm 
+          onClose={() => setMostrarFiguraForm(false)} 
+          onUpdateFiguras={fetchFiguras}
+        />
       </motion.div>
     );
   }
