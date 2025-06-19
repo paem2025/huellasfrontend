@@ -67,6 +67,18 @@ const FiguraForm = ({ onClose }) => {
         setEditNombre("");
     };
 
+    const handleDelete = (id) => {
+        axios
+            .delete(`${API_URL}${id}`)
+            .then(() => {
+                alert("Figura eliminada correctamente");
+                fetchFiguras();
+            })
+            .catch(() => {
+                alert("Error al eliminar figura");
+            });
+    };
+
     return (
         <div>
             <form
@@ -143,13 +155,22 @@ const FiguraForm = ({ onClose }) => {
                             ) : (
                             <>
                                 <span>{f.nombre}</span>
-                                <button
-                                onClick={() => handleEditClick(f.id_forma, f.nombre)}
-                                className="bg-blue-600 text-white px-2 py-1 rounded hover:bg-blue-700"
-                                type="button"
-                                >
-                                Editar
-                                </button>
+                                <div className="space-x-2">
+                                    <button
+                                        onClick={() => handleEditClick(f.id_forma, f.nombre)}
+                                        className="bg-blue-600 text-white text-sm px-2 py-0.5 rounded hover:bg-blue-700"
+                                        type="button"
+                                    >
+                                        Editar
+                                    </button>
+                                    <button
+                                        onClick={() => handleDelete(f.id_forma)}
+                                        className="bg-red-600 text-white text-sm px-2 py-0.5 rounded hover:bg-red-700"
+                                        type="button"
+                                    >
+                                        Eliminar
+                                    </button>
+                                </div>
                             </>
                             )}
                         </li>
