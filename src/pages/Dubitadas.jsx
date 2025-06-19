@@ -1,5 +1,5 @@
 // src/pages/Dubitadas.jsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import FiguraForm from "../components/FiguraForm";
 import FigurasDropdown from "../components/FigurasDropdown";
@@ -9,7 +9,6 @@ const API_URL_FORMAS = "http://127.0.0.1:5000/formas/";
 const API_URL_CALZADOS = "http://127.0.0.1:5000/calzados/";
 const API_URL_SUELAS = "http://127.0.0.1:5000/suelas/";
 
-
 const Dubitadas = () => {
   const [formData, setFormData] = useState({
     categoria: "",
@@ -18,29 +17,24 @@ const Dubitadas = () => {
     talle: "",
     medidas: "",
     colores: "",
-
     dibujosSuela: "",
     cuadrante: "",
     figurasGeometricas: "",
-
     figurasSuperiorIzquierdo: [],
     figurasSuperiorDerecho: [],
     figurasCentral: [],
     figurasInferiorDerecho: [],
     figurasInferiorIzquierdo: [],
-
   });
 
   const [figuras, setFiguras] = useState([]);
   const [mostrarFiguraForm, setMostrarFiguraForm] = useState(false);
 
-  // Cargar figuras al inicio
   useEffect(() => {
     axios
       .get(API_URL_FORMAS)
       .then((res) => {
-        console.log("Figuras cargadas:", res.data);
-        setFiguras(res.data); // Aquí se guarda el array de objetos
+        setFiguras(res.data);
       })
       .catch((err) => console.error("Error al obtener figuras:", err));
   }, []);
@@ -56,22 +50,6 @@ const Dubitadas = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    console.log("Datos ingresados:", formData);
-    setFormData({
-      categoria: "",
-      marca: "",
-      modelo: "",
-      talle: "",
-      medidas: "",
-      colores: "",
-      dibujosSuela: "",
-      cuadrante: "",
-      figurasGeometricas: "",
-    });
-  };
-  
-
     console.log("handleSubmit ejecutado");
 
     try {
@@ -87,11 +65,7 @@ const Dubitadas = () => {
         ancho: 1,
       });
 
-      console.log("Respuesta del backend (calzado):", calzadoRes.data);
-      
       const id_calzado = calzadoRes.data.id_calzado;
-
-      console.log("Calzado creado con ID:", id_calzado);
 
       const detalles = [];
 
@@ -104,8 +78,8 @@ const Dubitadas = () => {
               id_cuadrante,
               detalle_adicional: "",
             });
-           } else {
-             console.warn(`⚠️ No se encontró ID para la figura "${nombreFigura}", se omitirá.`); 
+          } else {
+            console.warn(`⚠️ No se encontró ID para la figura "${nombreFigura}", se omitirá.`);
           }
         });
       };
@@ -131,6 +105,9 @@ const Dubitadas = () => {
         talle: "",
         medidas: "",
         colores: "",
+        dibujosSuela: "",
+        cuadrante: "",
+        figurasGeometricas: "",
         figurasSuperiorIzquierdo: [],
         figurasSuperiorDerecho: [],
         figurasCentral: [],
@@ -157,8 +134,6 @@ const Dubitadas = () => {
       />
     </div>
   );
-
-  console.log("Dubitadas render completo. mostrarFiguraForm:", mostrarFiguraForm);
 
   if (mostrarFiguraForm) {
     return (
@@ -204,78 +179,62 @@ const Dubitadas = () => {
         {renderInput("colores", "Colores", "Ej: Rojo, Azul")}
         {renderInput("dibujosSuela", "Dibujos de la Suela", "Ej: Ondas, Puntas")}
 
-        {/*Boton Nueva Figura*/}
-        <button
-          type="button"
-          onClick={() => setMostrarFiguraForm(true)}
-          className="mt-3 bg-gradient-to-r from-green-600 to-green-700 text-white py-2 px-4 rounded-lg font-semibold hover:from-green-700 hover:to-green-800 transition duration-300 shadow-md"
-        >
-          Nueva Figura
-        </button>
-
         <hr className="my-4" />
 
         <div>
-
-          <label className="block text-sm font-semibold mb-1">Cuadrante del calzado:</label>
+          <label className="block text-sm font-semibold mb-1">
+            Cuadrante del calzado:
+          </label>
           <select
             name="cuadrante"
             value={formData.cuadrante}
             onChange={handleChange}
             required
             className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400"
-
-          <label className="block text-sm font-semibold mb-3 capitalize">Figuras de la Suela:</label>
-          <FigurasDropdown
-            title="Cuadrante Superior Izquierdo"
-            options={figuras.map(f => f.nombre)}
-            selectedOptions={formData.figurasSuperiorIzquierdo}
-            onChange={(selected) => setFormData(prev => ({ ...prev, figurasSuperiorIzquierdo: selected }))}
-          />
-          <FigurasDropdown
-            title="Cuadrante Superior Derecho"
-            options={figuras.map(f => f.nombre)}
-            selectedOptions={formData.figurasSuperiorDerecho}
-            onChange={(selected) => setFormData(prev => ({ ...prev, figurasSuperiorDerecho: selected }))}
-          />
-          <FigurasDropdown
-            title="Cuadrante Central"
-            options={figuras.map(f => f.nombre)}
-            selectedOptions={formData.figurasCentral}
-            onChange={(selected) => setFormData(prev => ({ ...prev, figurasCentral: selected }))}
-          />
-          <FigurasDropdown
-            title="Cuadrante Inferior Izquierdo"
-            options={figuras.map(f => f.nombre)}
-            selectedOptions={formData.figurasInferiorIzquierdo}
-            onChange={(selected) => setFormData(prev => ({ ...prev, figurasInferiorIzquierdo: selected }))}
-          />
-          <FigurasDropdown
-            title="Cuadrante Inferior Derecho"
-            options={figuras.map(f => f.nombre)}
-            selectedOptions={formData.figurasInferiorDerecho}
-            onChange={(selected) => setFormData(prev => ({ ...prev, figurasInferiorDerecho: selected }))}
-          />
-
-          <button
-            type="button"
-            onClick={() => setMostrarFiguraForm(true)}
-            className="mt-3 bg-gradient-to-r from-green-600 to-green-700 text-white py-2 px-4 rounded-lg font-semibold hover:from-green-700 hover:to-green-800 transition duration-300 shadow-md"
-
           >
-            <option value="">Seleccionar categoría</option>
+            <option value="">Seleccionar cuadrante</option>
             <option value="Superior Izquierdo">Superior Izquierdo</option>
             <option value="Superior Derecho">Superior Derecho</option>
             <option value="Central">Central</option>
             <option value="Inferior Izquierdo">Inferior Izquierdo</option>
             <option value="Inferior Derecho">Inferior Derecho</option>
-            
           </select>
         </div>
 
         {renderInput("figurasGeometricas", "Figuras Geométricas", "Ej: Círculo, Cuadrado")}
 
-        {/*Boton Nueva Figura*/}
+        <label className="block text-sm font-semibold mb-3 capitalize">Figuras de la Suela:</label>
+        <FigurasDropdown
+          title="Cuadrante Superior Izquierdo"
+          options={figuras.map(f => f.nombre)}
+          selectedOptions={formData.figurasSuperiorIzquierdo}
+          onChange={(selected) => setFormData(prev => ({ ...prev, figurasSuperiorIzquierdo: selected }))}
+        />
+        <FigurasDropdown
+          title="Cuadrante Superior Derecho"
+          options={figuras.map(f => f.nombre)}
+          selectedOptions={formData.figurasSuperiorDerecho}
+          onChange={(selected) => setFormData(prev => ({ ...prev, figurasSuperiorDerecho: selected }))}
+        />
+        <FigurasDropdown
+          title="Cuadrante Central"
+          options={figuras.map(f => f.nombre)}
+          selectedOptions={formData.figurasCentral}
+          onChange={(selected) => setFormData(prev => ({ ...prev, figurasCentral: selected }))}
+        />
+        <FigurasDropdown
+          title="Cuadrante Inferior Izquierdo"
+          options={figuras.map(f => f.nombre)}
+          selectedOptions={formData.figurasInferiorIzquierdo}
+          onChange={(selected) => setFormData(prev => ({ ...prev, figurasInferiorIzquierdo: selected }))}
+        />
+        <FigurasDropdown
+          title="Cuadrante Inferior Derecho"
+          options={figuras.map(f => f.nombre)}
+          selectedOptions={formData.figurasInferiorDerecho}
+          onChange={(selected) => setFormData(prev => ({ ...prev, figurasInferiorDerecho: selected }))}
+        />
+
         <button
           type="button"
           onClick={() => setMostrarFiguraForm(true)}
