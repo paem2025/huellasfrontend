@@ -3,7 +3,7 @@ import axios from 'axios';
 
 const API_URL = "http://127.0.0.1:5000/formas/";
 
-const FiguraForm = ({ onClose }) => {
+const FiguraForm = ({ onClose, onUpdateFiguras  }) => {
     const [figura, setFigura] = useState("");
     const [figuras, setFiguras] = useState([]);
     const [editId, setEditId] = useState(null);
@@ -108,10 +108,13 @@ const FiguraForm = ({ onClose }) => {
                     {onClose && (
                         <button
                             type = "button"
-                            onClick = {onClose}
+                            onClick={() => {
+                                if (onUpdateFiguras) onUpdateFiguras();
+                                onClose();
+                            }}
                             className = "bg-gray-400 text-white px-4 py-2 rounded-lg hover:bg-gray-500 transition font-semibold"
                         >
-                            Cancelar
+                            Volver
                         </button>
                     )}
                 </div>

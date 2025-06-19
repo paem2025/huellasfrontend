@@ -63,7 +63,7 @@ const Busqueda = () => {
   //Estado para figuras
   const [figuras, setFiguras] = useState([]);
 
-  useEffect(() => {
+  const fetchFiguras = () => {
     axios
       .get(API_URL_FORMAS)
       .then((response) => {
@@ -73,6 +73,9 @@ const Busqueda = () => {
       .catch((error) => {
         console.error("Error al obtener figuras:", error);
       });
+  };
+  useEffect(() => {
+    fetchFiguras();
   }, []);
 
   //Reemplazar formulario Busqueda por FiguraForm si mostrarFiguraForm es igual a true
@@ -84,7 +87,10 @@ const Busqueda = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
       >
-          <FiguraForm onClose={() => setMostrarFiguraForm(false)} />
+        <FiguraForm 
+          onClose={() => setMostrarFiguraForm(false)} 
+          onUpdateFiguras={fetchFiguras}
+        />
       </motion.div>
     );
   }
