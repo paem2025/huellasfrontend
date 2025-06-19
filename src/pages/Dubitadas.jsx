@@ -6,6 +6,8 @@ import FigurasDropdown from "../components/FigurasDropdown";
 import axios from "axios";
 
 const API_URL_FORMAS = "http://127.0.0.1:5000/formas/";
+const API_URL_CALZADOS = "http://127.0.0.1:5000/calzados/";
+const API_URL_SUELAS = "http://127.0.0.1:5000/suelas/";
 
 const Dubitadas = () => {
   const [formData, setFormData] = useState({
@@ -15,7 +17,9 @@ const Dubitadas = () => {
     talle: "",
     medidas: "",
     colores: "",
-    //Arrays que guardan las figuras de cada cuadrante
+    dibujosSuela: "",
+    cuadrante: "",
+    figurasGeometricas: "",
     figurasSuperiorIzquierdo: [],
     figurasSuperiorDerecho: [],
     figurasCentral: [],
@@ -23,45 +27,99 @@ const Dubitadas = () => {
     figurasInferiorIzquierdo: [],
   });
 
+  const [figuras, setFiguras] = useState([]);
   const [mostrarFiguraForm, setMostrarFiguraForm] = useState(false);
+
+  useEffect(() => {
+    axios
+      .get(API_URL_FORMAS)
+      .then((res) => {
+        setFiguras(res.data);
+      })
+      .catch((err) => console.error("Error al obtener figuras:", err));
+  }, []);
+
+  const obtenerIdForma = (nombreFigura) => {
+    const figura = figuras.find((f) => f.nombre === nombreFigura);
+    return figura ? figura.id_forma : null;
+  };
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Datos ingresados:", formData);
-    setFormData({
-      categoria: "",
-      marca: "",
-      modelo: "",
-      talle: "",
-      medidas: "",
-      colores: "",
-      figurasSuperiorIzquierdo: [],
-      figurasSuperiorDerecho: [],
-      figurasCentral: [],
-      figurasInferiorDerecho: [],
-      figurasInferiorIzquierdo: [],
-    });
+    console.log("handleSubmit ejecutado");
+
+    try {
+      const calzadoRes = await axios.post(API_URL_CALZADOS, {
+        categoria: formData.categoria,
+        marca: formData.marca,
+        modelo: formData.modelo,
+        talle: formData.talle,
+        medidas: formData.medidas,
+        colores: formData.colores,
+        tipo_registro: "dubitada",
+        alto: 1,
+        ancho: 1,
+      });
+
+      const id_calzado = calzadoRes.data.id_calzado;
+
+      const detalles = [];
+
+      const agregarDetalles = (figuras, id_cuadrante) => {
+        figuras.forEach((nombreFigura) => {
+          const id_forma = obtenerIdForma(nombreFigura);
+          if (id_forma) {
+            detalles.push({
+              id_forma,
+              id_cuadrante,
+              detalle_adicional: "",
+            });
+          } else {
+            console.warn(`⚠️ No se encontró ID para la figura "${nombreFigura}", se omitirá.`);
+          }
+        });
+      };
+
+      agregarDetalles(formData.figurasSuperiorIzquierdo, 1);
+      agregarDetalles(formData.figurasSuperiorDerecho, 2);
+      agregarDetalles(formData.figurasCentral, 3);
+      agregarDetalles(formData.figurasInferiorIzquierdo, 4);
+      agregarDetalles(formData.figurasInferiorDerecho, 5);
+
+      await axios.post(API_URL_SUELAS, {
+        id_calzado,
+        descripcion_general: "Huella dubitada registrada",
+        detalles,
+      });
+
+      alert("Huella dubitada registrada con éxito ✅");
+
+      setFormData({
+        categoria: "",
+        marca: "",
+        modelo: "",
+        talle: "",
+        medidas: "",
+        colores: "",
+        dibujosSuela: "",
+        cuadrante: "",
+        figurasGeometricas: "",
+        figurasSuperiorIzquierdo: [],
+        figurasSuperiorDerecho: [],
+        figurasCentral: [],
+        figurasInferiorDerecho: [],
+        figurasInferiorIzquierdo: [],
+      });
+    } catch (error) {
+      console.error("Error al registrar huella dubitada:", error);
+      alert("❌ Error al registrar huella dubitada");
+    }
   };
 
-  //Estado para figuras
-    const [figuras, setFiguras] = useState([]);
-  
-    useEffect(() => {
-      axios
-        .get(API_URL_FORMAS)
-        .then((response) => {
-          const nombresFiguras = response.data.map(f => f.nombre);
-          setFiguras(nombresFiguras);
-        })
-        .catch((error) => {
-          console.error("Error al obtener figuras:", error);
-        });
-    }, []);
-  
   const renderInput = (name, label, placeholder = "") => (
     <div key={name}>
       <label className="block text-sm font-semibold mb-1">{label}:</label>
@@ -77,7 +135,6 @@ const Dubitadas = () => {
     </div>
   );
 
-  //Reemplazar formulario Dubitadas por FiguraForm si mostrarFiguraForm es igual a true
   if (mostrarFiguraForm) {
     return (
       <motion.div
@@ -86,7 +143,7 @@ const Dubitadas = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
       >
-          <FiguraForm onClose={() => setMostrarFiguraForm(false)} />
+        <FiguraForm onClose={() => setMostrarFiguraForm(false)} />
       </motion.div>
     );
   }
@@ -97,8 +154,6 @@ const Dubitadas = () => {
         Registrar Huella Dubitada
       </h2>
       <form onSubmit={handleSubmit} className="space-y-4">
-
-        {/* Categoría */}
         <div>
           <label className="block text-sm font-semibold mb-1">Categoría:</label>
           <select
@@ -122,50 +177,71 @@ const Dubitadas = () => {
         {renderInput("talle", "Talle")}
         {renderInput("medidas", "Medidas", "Ej: 10cm x 5cm")}
         {renderInput("colores", "Colores", "Ej: Rojo, Azul")}
+        {renderInput("dibujosSuela", "Dibujos de la Suela", "Ej: Ondas, Puntas")}
 
-        {/* Seleccionaon de figuras por cuadrante */}
+        <hr className="my-4" />
+
         <div>
-          <label className = "block text-sm font-semibold mb-3 capitalize">Figuras de la Suela:</label>
-          <FigurasDropdown
-            title="Cuadrante Superior Izquierdo" 
-            options={figuras} 
-            selectedOptions={formData.figurasSuperiorIzquierdo} 
-            onChange={(selectedFigures) => setFormData(prev => ({ ...prev, figurasSuperiorIzquierdo: selectedFigures}))}
-          />
-          <FigurasDropdown
-            title="Cuadrante Superior Derecho" 
-            options={figuras} 
-            selectedOptions={formData.figurasSuperiorDerecho} 
-            onChange={(selectedFigures) => setFormData(prev => ({ ...prev, figurasSuperiorDerecho: selectedFigures}))} 
-          />
-          <FigurasDropdown
-            title="Cuadrante Central" 
-            options={figuras} 
-            selectedOptions={formData.figurasCentral} 
-            onChange={(selectedFigures) => setFormData(prev => ({ ...prev, figurasCentral: selectedFigures}))} 
-          />
-          <FigurasDropdown
-            title="Cuadrante Inferior Izquierdo" 
-            options={figuras} 
-            selectedOptions={formData.figurasInferiorIzquierdo} 
-            onChange={(selectedFigures) => setFormData(prev => ({ ...prev, figurasInferiorIzquierdo: selectedFigures}))} 
-          />
-          <FigurasDropdown
-            title="Cuadrante Inferior Derecho" 
-            options={figuras} 
-            selectedOptions={formData.figurasInferiorDerecho} 
-            onChange={(selectedFigures) => setFormData(prev => ({ ...prev, figurasInferiorDerecho: selectedFigures}))} 
-          />
-
-          {/* Botón Nueva Figura */}
-          <button
-            type="button"
-            onClick={() => setMostrarFiguraForm(true)}
-            className="mt-3 bg-gradient-to-r from-green-600 to-green-700 text-white py-2 px-4 rounded-lg font-semibold hover:from-green-700 hover:to-green-800 transition duration-300 shadow-md"
+          <label className="block text-sm font-semibold mb-1">
+            Cuadrante del calzado:
+          </label>
+          <select
+            name="cuadrante"
+            value={formData.cuadrante}
+            onChange={handleChange}
+            required
+            className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400"
           >
-            Nueva Figura
-          </button>
+            <option value="">Seleccionar cuadrante</option>
+            <option value="Superior Izquierdo">Superior Izquierdo</option>
+            <option value="Superior Derecho">Superior Derecho</option>
+            <option value="Central">Central</option>
+            <option value="Inferior Izquierdo">Inferior Izquierdo</option>
+            <option value="Inferior Derecho">Inferior Derecho</option>
+          </select>
         </div>
+
+        {renderInput("figurasGeometricas", "Figuras Geométricas", "Ej: Círculo, Cuadrado")}
+
+        <label className="block text-sm font-semibold mb-3 capitalize">Figuras de la Suela:</label>
+        <FigurasDropdown
+          title="Cuadrante Superior Izquierdo"
+          options={figuras.map(f => f.nombre)}
+          selectedOptions={formData.figurasSuperiorIzquierdo}
+          onChange={(selected) => setFormData(prev => ({ ...prev, figurasSuperiorIzquierdo: selected }))}
+        />
+        <FigurasDropdown
+          title="Cuadrante Superior Derecho"
+          options={figuras.map(f => f.nombre)}
+          selectedOptions={formData.figurasSuperiorDerecho}
+          onChange={(selected) => setFormData(prev => ({ ...prev, figurasSuperiorDerecho: selected }))}
+        />
+        <FigurasDropdown
+          title="Cuadrante Central"
+          options={figuras.map(f => f.nombre)}
+          selectedOptions={formData.figurasCentral}
+          onChange={(selected) => setFormData(prev => ({ ...prev, figurasCentral: selected }))}
+        />
+        <FigurasDropdown
+          title="Cuadrante Inferior Izquierdo"
+          options={figuras.map(f => f.nombre)}
+          selectedOptions={formData.figurasInferiorIzquierdo}
+          onChange={(selected) => setFormData(prev => ({ ...prev, figurasInferiorIzquierdo: selected }))}
+        />
+        <FigurasDropdown
+          title="Cuadrante Inferior Derecho"
+          options={figuras.map(f => f.nombre)}
+          selectedOptions={formData.figurasInferiorDerecho}
+          onChange={(selected) => setFormData(prev => ({ ...prev, figurasInferiorDerecho: selected }))}
+        />
+
+        <button
+          type="button"
+          onClick={() => setMostrarFiguraForm(true)}
+          className="mt-3 bg-gradient-to-r from-green-600 to-green-700 text-white py-2 px-4 rounded-lg font-semibold hover:from-green-700 hover:to-green-800 transition duration-300 shadow-md"
+        >
+          Nueva Figura
+        </button>
 
         <button
           type="submit"
