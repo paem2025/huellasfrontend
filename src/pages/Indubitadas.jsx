@@ -1,8 +1,13 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { FaCheckCircle } from "react-icons/fa";
 import FiguraForm from "../components/FiguraForm";
 import FigurasDropdown from "../components/FigurasDropdown";
+import axios from "axios";
+
+const API_URL_FORMAS = "http://127.0.0.1:5000/formas/";
+const API_URL_CALZADOS = "http://127.0.0.1:5000/calzados/";
+const API_URL_SUELAS = "http://127.0.0.1:5000/suelas/";
 
 const Indubitadas = () => {
   const [formData, setFormData] = useState({
@@ -11,7 +16,6 @@ const Indubitadas = () => {
     talle: "",
     medidas: "",
     colores: "",
-    //Arrays que guardan las figuras de cada cuadrante
     figurasSuperiorIzquierdo: [],
     figurasSuperiorDerecho: [],
     figurasCentral: [],
@@ -19,33 +23,85 @@ const Indubitadas = () => {
     figurasInferiorIzquierdo: [],
   });
 
+  const [mostrarFiguraForm, setMostrarFiguraForm] = useState(false);
+  const [figuras, setFiguras] = useState([]);
+
+  useEffect(() => {
+    axios
+      .get(API_URL_FORMAS)
+      .then((res) => setFiguras(res.data))
+      .catch((err) => console.error("Error al obtener figuras:", err));
+  }, []);
+
+  const obtenerIdForma = (nombreFigura) => {
+    const figura = figuras.find((f) => f.nombre === nombreFigura);
+    return figura ? figura.id_forma : null;
+  };
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    alert("Huella registrada correctamente");
-    setFormData({
-      marca: "",
-      modelo: "",
-      talle: "",
-      medidas: "",
-      colores: "",
-      figurasSuperiorIzquierdo: [],
-      figurasSuperiorDerecho: [],
-      figurasCentral: [],
-      figurasInferiorDerecho: [],
-      figurasInferiorIzquierdo: [],
-    });
+
+    try {
+      const calzadoRes = await axios.post(API_URL_CALZADOS, {
+        categoria: "N/A",
+        marca: formData.marca,
+        modelo: formData.modelo,
+        talle: formData.talle,
+        medidas: formData.medidas,
+        colores: formData.colores,
+        tipo_registro: "indubitada_proveedor",
+        alto: 1,
+        ancho: 1,
+      });
+
+      const id_calzado = calzadoRes.data.id_calzado;
+
+      const detalles = [];
+      const agregarDetalles = (figuras, id_cuadrante) => {
+        figuras.forEach((nombreFigura) => {
+          const id_forma = obtenerIdForma(nombreFigura);
+          if (id_forma) {
+            detalles.push({ id_forma, id_cuadrante, detalle_adicional: "" });
+          }
+        });
+      };
+
+      agregarDetalles(formData.figurasSuperiorIzquierdo, 1);
+      agregarDetalles(formData.figurasSuperiorDerecho, 2);
+      agregarDetalles(formData.figurasCentral, 3);
+      agregarDetalles(formData.figurasInferiorIzquierdo, 4);
+      agregarDetalles(formData.figurasInferiorDerecho, 5);
+
+      await axios.post(API_URL_SUELAS, {
+        id_calzado,
+        descripcion_general: "Huella indubitada registrada",
+        detalles,
+      });
+
+      alert("Huella indubitada registrada con éxito ✅");
+
+      setFormData({
+        marca: "",
+        modelo: "",
+        talle: "",
+        medidas: "",
+        colores: "",
+        figurasSuperiorIzquierdo: [],
+        figurasSuperiorDerecho: [],
+        figurasCentral: [],
+        figurasInferiorDerecho: [],
+        figurasInferiorIzquierdo: [],
+      });
+    } catch (error) {
+      console.error("Error al registrar huella indubitada:", error);
+      alert("❌ Error al registrar huella indubitada");
+    }
   };
 
-  const [mostrarFiguraForm, setMostrarFiguraForm] = useState(false);
-
-  //Array de figuras de ejemplo, cambiar por el array real traido por el endpoint
-  const exampleFigures = ["Figura1", "Figura2", "Figura3"];
-
-  //Reemplazar formulario Indubitadas por FiguraForm si mostrarFiguraForm es igual a true
   if (mostrarFiguraForm) {
     return (
       <motion.div
@@ -71,6 +127,7 @@ const Indubitadas = () => {
           <FaCheckCircle className="inline mr-2 text-blue-600" />
           Registrar Huella Indubitada
         </h2>
+
         <form onSubmit={handleSubmit} className="space-y-4">
           {["marca", "modelo", "talle", "medidas", "colores"].map((field) => (
             <div key={field}>
@@ -83,53 +140,30 @@ const Indubitadas = () => {
                 placeholder={`Ingrese ${field}`}
                 required
                 className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
-              />  
+              />
             </div>
           ))}
 
-          {/* Seleccionaon de figuras por cuadrante */}
+          {/* Cuadrantes con Figuras */}
           <div>
-            <label className = "block text-sm font-semibold mb-3 capitalize">Figuras de la Suela:</label>
-            <FigurasDropdown
-              title="Cuadrante Superior Izquierdo" 
-              options={exampleFigures} 
-              selectedOptions={formData.figurasSuperiorIzquierdo} 
-              onChange={(selectedFigures) => setFormData(prev => ({ ...prev, figurasSuperiorIzquierdo: selectedFigures }))}
-            />
-            <FigurasDropdown
-              title="Cuadrante Superior Derecho" 
-              options={exampleFigures} 
-              selectedOptions={formData.figurasSuperiorDerecho} 
-              onChange={(selectedFigures) => setFormData(prev => ({ ...prev, figurasSuperiorDerecho: selectedFigures }))}
-            />
-            <FigurasDropdown
-              title="Cuadrante Central" 
-              options={exampleFigures} 
-              selectedOptions={formData.figurasCentral} 
-              onChange={(selectedFigures) => setFormData(prev => ({ ...prev, figurasCentral: selectedFigures}))} 
-            />
-            <FigurasDropdown
-              title="Cuadrante Inferior Izquierdo" 
-              options={exampleFigures} 
-              selectedOptions={formData.figurasInferiorIzquierdo} 
-              onChange={(selectedFigures) => setFormData(prev => ({ ...prev, figurasInferiorIzquierdo: selectedFigures}))} 
-            />
-            <FigurasDropdown
-              title="Cuadrante Inferior Derecho" 
-              options={exampleFigures} 
-              selectedOptions={formData.figurasInferiorDerecho} 
-              onChange={(selectedFigures) => setFormData(prev => ({ ...prev, figurasInferiorDerecho: selectedFigures}))} 
-            />
-
-            {/* Botón Nueva Figura */}
-            <button
-              type="button"
-              onClick={() => setMostrarFiguraForm(true)}
-              className="mt-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white py-2 px-4 rounded-lg font-semibold hover:from-blue-700 hover:to-blue-800 transition duration-300 shadow-md"
-            >
-              Nueva Figura
-            </button>
+            <label className="block text-sm font-semibold mb-3 capitalize">Figuras de la Suela:</label>
+            <FigurasDropdown title="Cuadrante Superior Izquierdo" options={figuras.map(f => f.nombre)} selectedOptions={formData.figurasSuperiorIzquierdo} onChange={(selected) => setFormData(prev => ({ ...prev, figurasSuperiorIzquierdo: selected }))} />
+            <FigurasDropdown title="Cuadrante Superior Derecho" options={figuras.map(f => f.nombre)} selectedOptions={formData.figurasSuperiorDerecho} onChange={(selected) => setFormData(prev => ({ ...prev, figurasSuperiorDerecho: selected }))} />
+            <FigurasDropdown title="Cuadrante Central" options={figuras.map(f => f.nombre)} selectedOptions={formData.figurasCentral} onChange={(selected) => setFormData(prev => ({ ...prev, figurasCentral: selected }))} />
+            <FigurasDropdown title="Cuadrante Inferior Izquierdo" options={figuras.map(f => f.nombre)} selectedOptions={formData.figurasInferiorIzquierdo} onChange={(selected) => setFormData(prev => ({ ...prev, figurasInferiorIzquierdo: selected }))} />
+            <FigurasDropdown title="Cuadrante Inferior Derecho" options={figuras.map(f => f.nombre)} selectedOptions={formData.figurasInferiorDerecho} onChange={(selected) => setFormData(prev => ({ ...prev, figurasInferiorDerecho: selected }))} />
           </div>
+
+          {/* Botón para agregar nueva figura */}
+          <button
+            type="button"
+            onClick={() => setMostrarFiguraForm(true)}
+            className="mt-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white py-2 px-4 rounded-lg font-semibold hover:from-blue-700 hover:to-blue-800 transition duration-300 shadow-md"
+          >
+            Nueva Figura
+          </button>
+
+          {/* Botón enviar */}
           <button
             type="submit"
             className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white py-3 rounded-lg font-semibold hover:from-blue-700 hover:to-blue-800 transition duration-300 shadow-md"
