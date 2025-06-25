@@ -17,9 +17,6 @@ const Dubitadas = () => {
     talle: "",
     medidas: "",
     colores: "",
-    dibujosSuela: "",
-    cuadrante: "",
-    figurasGeometricas: "",
     figurasSuperiorIzquierdo: [],
     figurasSuperiorDerecho: [],
     figurasCentral: [],
@@ -50,7 +47,6 @@ const Dubitadas = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("handleSubmit ejecutado");
 
     try {
       const calzadoRes = await axios.post(API_URL_CALZADOS, {
@@ -66,7 +62,6 @@ const Dubitadas = () => {
       });
 
       const id_calzado = calzadoRes.data.id_calzado;
-
       const detalles = [];
 
       const agregarDetalles = (figuras, id_cuadrante) => {
@@ -78,8 +73,6 @@ const Dubitadas = () => {
               id_cuadrante,
               detalle_adicional: "",
             });
-          } else {
-            console.warn(`⚠️ No se encontró ID para la figura "${nombreFigura}", se omitirá.`);
           }
         });
       };
@@ -105,9 +98,6 @@ const Dubitadas = () => {
         talle: "",
         medidas: "",
         colores: "",
-        dibujosSuela: "",
-        cuadrante: "",
-        figurasGeometricas: "",
         figurasSuperiorIzquierdo: [],
         figurasSuperiorDerecho: [],
         figurasCentral: [],
@@ -177,31 +167,8 @@ const Dubitadas = () => {
         {renderInput("talle", "Talle")}
         {renderInput("medidas", "Medidas", "Ej: 10cm x 5cm")}
         {renderInput("colores", "Colores", "Ej: Rojo, Azul")}
-        {renderInput("dibujosSuela", "Dibujos de la Suela", "Ej: Ondas, Puntas")}
 
         <hr className="my-4" />
-
-        <div>
-          <label className="block text-sm font-semibold mb-1">
-            Cuadrante del calzado:
-          </label>
-          <select
-            name="cuadrante"
-            value={formData.cuadrante}
-            onChange={handleChange}
-            required
-            className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400"
-          >
-            <option value="">Seleccionar cuadrante</option>
-            <option value="Superior Izquierdo">Superior Izquierdo</option>
-            <option value="Superior Derecho">Superior Derecho</option>
-            <option value="Central">Central</option>
-            <option value="Inferior Izquierdo">Inferior Izquierdo</option>
-            <option value="Inferior Derecho">Inferior Derecho</option>
-          </select>
-        </div>
-
-        {renderInput("figurasGeometricas", "Figuras Geométricas", "Ej: Círculo, Cuadrado")}
 
         <label className="block text-sm font-semibold mb-3 capitalize">Figuras de la Suela:</label>
         <FigurasDropdown

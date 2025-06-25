@@ -150,7 +150,7 @@ const IndubitadasComisaria = () => {
         Registrar Huella Indubitada (Comisarías)
       </h2>
       <form onSubmit={handleSubmit} className="space-y-4">
-        {fields.map(({ name, label }) => (
+        {fields.map(({ name, label }) => (   
           <div key={name}>
             <label className="block text-sm font-semibold mb-1">
               {label}:
