@@ -37,6 +37,7 @@ const FiguraForm = ({ onClose, onUpdateFiguras }) => {
                 alert("Figura cargada correctamente")
                 setFigura("");
                 fetchFiguras();
+                onUpdateFiguras();
             })
             .catch(() => {
                 alert("Error al cargar figura")
@@ -56,6 +57,7 @@ const FiguraForm = ({ onClose, onUpdateFiguras }) => {
                 setEditId(null);
                 setEditNombre("");
                 fetchFiguras();
+                onUpdateFiguras();
             })
             .catch(() => {
                 alert ("Error al editar figura")
@@ -73,6 +75,7 @@ const FiguraForm = ({ onClose, onUpdateFiguras }) => {
             .then(() => {
                 alert("Figura eliminada correctamente");
                 fetchFiguras();
+                onUpdateFiguras();
             })
             .catch(() => {
                 alert("Error al eliminar figura");
