@@ -14,7 +14,8 @@ const Indubitadas = () => {
     marca: "",
     modelo: "",
     talle: "",
-    medidas: "",
+    alto: "",
+    ancho: "",
     colores: "",
     //Arrays que guardan las figuras de cada cuadrante
     figurasSuperiorIzquierdo: [],
@@ -61,11 +62,10 @@ const Indubitadas = () => {
         marca: formData.marca,
         modelo: formData.modelo,
         talle: formData.talle,
-        medidas: formData.medidas,
+        alto: formData.alto,
+        ancho: formData.ancho,
         colores: formData.colores,
         tipo_registro: "indubitada_proveedor",
-        alto: 1,
-        ancho: 1,
       });
 
       const id_calzado = calzadoRes.data.id_calzado;
@@ -98,7 +98,8 @@ const Indubitadas = () => {
         marca: "",
         modelo: "",
         talle: "",
-        medidas: "",
+        alto: "",
+        ancho: "",
         colores: "",
         figurasSuperiorIzquierdo: [],
         figurasSuperiorDerecho: [],
@@ -142,7 +143,7 @@ const Indubitadas = () => {
           Registrar Huella Indubitada
         </h2>
         <form onSubmit={handleSubmit} className="space-y-4">
-          {["marca", "modelo", "talle", "medidas", "colores"].map((field) => (
+          {["marca", "modelo", "talle", "alto", "ancho", "colores"].map((field) => (
             <div key={field}>
               <label className="block text-sm font-semibold mb-1 capitalize">{field}:</label>
               <input
