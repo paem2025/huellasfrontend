@@ -1,46 +1,46 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 
-const API_URL_MARCAS = "http://127.0.0.1:5000/marcas/";
+const API_URL_CATEGORIAS = "http://127.0.0.1:5000/categorias/";
 
-const MarcaForm = ({ onClose, onUpdateMarcas }) => {
-  const [marca, setMarca] = useState("");
-  const [marcas, setMarcas] = useState([]);
+const CategoriaForm = ({ onClose, onUpdateCategorias }) => {
+  const [categoria, setCategoria] = useState("");
+  const [categorias, setCategorias] = useState([]);
   const [editId, setEditId] = useState(null);
   const [editNombre, setEditNombre] = useState("");
 
   const handleChange = (e) => {
-    setMarca(e.target.value);
+    setCategoria(e.target.value);
   };
 
-  const fetchMarcas = () => {
+  const fetchCategorias = () => {
     axios
-      .get(API_URL_MARCAS)
-      .then((response) => {
-        setMarcas(response.data);
+      .get(API_URL_CATEGORIAS)
+      .then((res) => {
+        setCategorias(res.data);
       })
       .catch((error) => {
-        console.error("Error al obtener marcas:", error);
+        console.error("Error al obtener categorías:", error);
       });
   };
 
   useEffect(() => {
-    fetchMarcas();
+    fetchCategorias();
   }, []);
 
   const handleSubmit = (e) => {
     e.preventDefault();
 
     axios
-      .post(API_URL_MARCAS, { nombre: marca })
+      .post(API_URL_CATEGORIAS, { nombre: categoria })
       .then(() => {
-        alert("Marca cargada correctamente");
-        setMarca("");
-        fetchMarcas();
-        if (onUpdateMarcas) onUpdateMarcas();
+        alert("Categoría cargada correctamente");
+        setCategoria("");
+        fetchCategorias();
+        onUpdateCategorias();
       })
       .catch(() => {
-        alert("Error al cargar marca");
+        alert("Error al cargar categoría");
       });
   };
 
@@ -51,15 +51,17 @@ const MarcaForm = ({ onClose, onUpdateMarcas }) => {
 
   const handleSaveEdit = () => {
     axios
-      .patch(`${API_URL_MARCAS}${editId}`, { nombre: editNombre })
+      .patch(`${API_URL_CATEGORIAS}${editId}`, { nombre: editNombre })
       .then(() => {
-        alert("Marca editada correctamente");
+        alert("Categoría editada correctamente");
         setEditId(null);
         setEditNombre("");
-        fetchMarcas();
-        if (onUpdateMarcas) onUpdateMarcas();
+        fetchCategorias();
+        onUpdateCategorias();
       })
-      .catch(() => alert("Error al editar marca"));
+      .catch(() => {
+        alert("Error al editar categoría");
+      });
   };
 
   const handleCancelEdit = () => {
@@ -69,14 +71,14 @@ const MarcaForm = ({ onClose, onUpdateMarcas }) => {
 
   const handleDelete = (id) => {
     axios
-      .delete(`${API_URL_MARCAS}${id}`)
+      .delete(`${API_URL_CATEGORIAS}${id}`)
       .then(() => {
-        alert("Marca eliminada correctamente");
-        fetchMarcas();
-        if (onUpdateMarcas) onUpdateMarcas();
+        alert("Categoría eliminada correctamente");
+        fetchCategorias();
+        onUpdateCategorias();
       })
       .catch(() => {
-        alert("Error al eliminar marca");
+        alert("Error al eliminar categoría");
       });
   };
 
@@ -86,13 +88,13 @@ const MarcaForm = ({ onClose, onUpdateMarcas }) => {
         onSubmit={handleSubmit}
         className="bg-white p-8 rounded-2xl shadow-xl max-w-lg mx-auto space-y-4"
       >
-        <label className="block text-sm font-semibold mb-1">Marca:</label>
+        <label className="block text-sm font-semibold mb-1">Categoría:</label>
 
         <input
           type="text"
-          value={marca}
+          value={categoria}
           onChange={handleChange}
-          placeholder="Ingrese marca"
+          placeholder="Ingrese categoría"
           className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
           required
         />
@@ -109,7 +111,7 @@ const MarcaForm = ({ onClose, onUpdateMarcas }) => {
             <button
               type="button"
               onClick={() => {
-                if (onUpdateMarcas) onUpdateMarcas();
+                onUpdateCategorias();
                 onClose();
               }}
               className="bg-gray-400 text-white px-4 py-2 rounded-lg hover:bg-gray-500 transition font-semibold"
@@ -121,18 +123,18 @@ const MarcaForm = ({ onClose, onUpdateMarcas }) => {
       </form>
 
       <div className="bg-white p-8 rounded-2xl shadow-xl max-w-lg mx-auto mt-6">
-        <h2 className="text-sm font-semibold mb-4">Marcas cargadas:</h2>
+        <h2 className="text-sm font-semibold mb-4">Categorías cargadas:</h2>
 
-        {marcas.length === 0 && <p>No hay marcas cargadas</p>}
+        {categorias.length === 0 && <p>No hay categorías cargadas</p>}
 
-        {marcas.length > 0 && (
+        {categorias.length > 0 && (
           <ul className="list-disc list-inside">
-            {marcas.map((m) => (
+            {categorias.map((c) => (
               <li
-                key={m.id_marca}
+                key={c.id_categoria}
                 className="flex items-center justify-between py-1 border-b last:border-b-0"
               >
-                {editId === m.id_marca ? (
+                {editId === c.id_categoria ? (
                   <>
                     <input
                       type="text"
@@ -159,17 +161,17 @@ const MarcaForm = ({ onClose, onUpdateMarcas }) => {
                   </>
                 ) : (
                   <>
-                    <span>{m.nombre}</span>
+                    <span>{c.nombre}</span>
                     <div className="space-x-2">
                       <button
-                        onClick={() => handleEditClick(m.id_marca, m.nombre)}
+                        onClick={() => handleEditClick(c.id_categoria, c.nombre)}
                         className="bg-blue-600 text-white text-sm px-2 py-0.5 rounded hover:bg-blue-700"
                         type="button"
                       >
                         Editar
                       </button>
                       <button
-                        onClick={() => handleDelete(m.id_marca)}
+                        onClick={() => handleDelete(c.id_categoria)}
                         className="bg-red-600 text-white text-sm px-2 py-0.5 rounded hover:bg-red-700"
                         type="button"
                       >
@@ -187,4 +189,4 @@ const MarcaForm = ({ onClose, onUpdateMarcas }) => {
   );
 };
 
-export default MarcaForm;
+export default CategoriaForm;

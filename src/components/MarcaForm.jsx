@@ -15,13 +15,9 @@ const MarcaForm = ({ onClose, onUpdateMarcas }) => {
 
   const fetchMarcas = () => {
     axios
-      .get(API_URL_MARCAS)
-      .then((response) => {
-        setMarcas(response.data);
-      })
-      .catch((error) => {
-        console.error("Error al obtener marcas:", error);
-      });
+        .get(API_URL_MARCAS)
+        .then((res) => setMarcas(res.data))
+        .catch((error) => console.error("Error al obtener marcas:", error));
   };
 
   useEffect(() => {
@@ -37,7 +33,7 @@ const MarcaForm = ({ onClose, onUpdateMarcas }) => {
         alert("Marca cargada correctamente");
         setMarca("");
         fetchMarcas();
-        if (onUpdateMarcas) onUpdateMarcas();
+        onUpdateMarcas();
       })
       .catch(() => {
         alert("Error al cargar marca");
@@ -57,9 +53,11 @@ const MarcaForm = ({ onClose, onUpdateMarcas }) => {
         setEditId(null);
         setEditNombre("");
         fetchMarcas();
-        if (onUpdateMarcas) onUpdateMarcas();
+        onUpdateMarcas();
       })
-      .catch(() => alert("Error al editar marca"));
+      .catch(() => {
+        alert("Error al editar marca");
+      });
   };
 
   const handleCancelEdit = () => {
@@ -73,7 +71,7 @@ const MarcaForm = ({ onClose, onUpdateMarcas }) => {
       .then(() => {
         alert("Marca eliminada correctamente");
         fetchMarcas();
-        if (onUpdateMarcas) onUpdateMarcas();
+        onUpdateMarcas();
       })
       .catch(() => {
         alert("Error al eliminar marca");
@@ -109,7 +107,7 @@ const MarcaForm = ({ onClose, onUpdateMarcas }) => {
             <button
               type="button"
               onClick={() => {
-                if (onUpdateMarcas) onUpdateMarcas();
+                onUpdateMarcas();
                 onClose();
               }}
               className="bg-gray-400 text-white px-4 py-2 rounded-lg hover:bg-gray-500 transition font-semibold"

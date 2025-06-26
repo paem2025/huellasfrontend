@@ -1,46 +1,44 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 
-const API_URL_MARCAS = "http://127.0.0.1:5000/marcas/";
+const API_URL_MODELOS = "http://127.0.0.1:5000/modelos/";
 
-const MarcaForm = ({ onClose, onUpdateMarcas }) => {
-  const [marca, setMarca] = useState("");
-  const [marcas, setMarcas] = useState([]);
+const ModeloForm = ({ onClose, onUpdateModelos }) => {
+  const [modelo, setModelo] = useState("");
+  const [modelos, setModelos] = useState([]);
   const [editId, setEditId] = useState(null);
   const [editNombre, setEditNombre] = useState("");
 
   const handleChange = (e) => {
-    setMarca(e.target.value);
+    setModelo(e.target.value);
   };
 
-  const fetchMarcas = () => {
+  const fetchModelos = () => {
     axios
-      .get(API_URL_MARCAS)
-      .then((response) => {
-        setMarcas(response.data);
-      })
+      .get(API_URL_MODELOS)
+      .then((res) => setModelos(res.data))
       .catch((error) => {
-        console.error("Error al obtener marcas:", error);
+        console.error("Error al obtener modelos:", error);
       });
   };
 
   useEffect(() => {
-    fetchMarcas();
+    fetchModelos();
   }, []);
 
   const handleSubmit = (e) => {
     e.preventDefault();
 
     axios
-      .post(API_URL_MARCAS, { nombre: marca })
+      .post(API_URL_MODELOS, { nombre: modelo })
       .then(() => {
-        alert("Marca cargada correctamente");
-        setMarca("");
-        fetchMarcas();
-        if (onUpdateMarcas) onUpdateMarcas();
+        alert("Modelo cargado correctamente");
+        setModelo("");
+        fetchModelos();
+        onUpdateModelos();
       })
       .catch(() => {
-        alert("Error al cargar marca");
+        alert("Error al cargar modelo");
       });
   };
 
@@ -51,15 +49,17 @@ const MarcaForm = ({ onClose, onUpdateMarcas }) => {
 
   const handleSaveEdit = () => {
     axios
-      .patch(`${API_URL_MARCAS}${editId}`, { nombre: editNombre })
+      .patch(`${API_URL_MODELOS}${editId}`, { nombre: editNombre })
       .then(() => {
-        alert("Marca editada correctamente");
+        alert("Modelo editado correctamente");
         setEditId(null);
         setEditNombre("");
-        fetchMarcas();
-        if (onUpdateMarcas) onUpdateMarcas();
+        fetchModelos();
+        onUpdateModelos();
       })
-      .catch(() => alert("Error al editar marca"));
+      .catch(() => {
+        alert("Error al editar modelo");
+      });
   };
 
   const handleCancelEdit = () => {
@@ -69,14 +69,14 @@ const MarcaForm = ({ onClose, onUpdateMarcas }) => {
 
   const handleDelete = (id) => {
     axios
-      .delete(`${API_URL_MARCAS}${id}`)
+      .delete(`${API_URL_MODELOS}${id}`)
       .then(() => {
-        alert("Marca eliminada correctamente");
-        fetchMarcas();
-        if (onUpdateMarcas) onUpdateMarcas();
+        alert("Modelo eliminado correctamente");
+        fetchModelos();
+        onUpdateModelos();
       })
       .catch(() => {
-        alert("Error al eliminar marca");
+        alert("Error al eliminar modelo");
       });
   };
 
@@ -86,13 +86,13 @@ const MarcaForm = ({ onClose, onUpdateMarcas }) => {
         onSubmit={handleSubmit}
         className="bg-white p-8 rounded-2xl shadow-xl max-w-lg mx-auto space-y-4"
       >
-        <label className="block text-sm font-semibold mb-1">Marca:</label>
+        <label className="block text-sm font-semibold mb-1">Modelo:</label>
 
         <input
           type="text"
-          value={marca}
+          value={modelo}
           onChange={handleChange}
-          placeholder="Ingrese marca"
+          placeholder="Ingrese modelo"
           className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
           required
         />
@@ -109,7 +109,7 @@ const MarcaForm = ({ onClose, onUpdateMarcas }) => {
             <button
               type="button"
               onClick={() => {
-                if (onUpdateMarcas) onUpdateMarcas();
+                onUpdateModelos();
                 onClose();
               }}
               className="bg-gray-400 text-white px-4 py-2 rounded-lg hover:bg-gray-500 transition font-semibold"
@@ -121,18 +121,18 @@ const MarcaForm = ({ onClose, onUpdateMarcas }) => {
       </form>
 
       <div className="bg-white p-8 rounded-2xl shadow-xl max-w-lg mx-auto mt-6">
-        <h2 className="text-sm font-semibold mb-4">Marcas cargadas:</h2>
+        <h2 className="text-sm font-semibold mb-4">Modelos cargados:</h2>
 
-        {marcas.length === 0 && <p>No hay marcas cargadas</p>}
+        {modelos.length === 0 && <p>No hay modelos cargados</p>}
 
-        {marcas.length > 0 && (
+        {modelos.length > 0 && (
           <ul className="list-disc list-inside">
-            {marcas.map((m) => (
+            {modelos.map((m) => (
               <li
-                key={m.id_marca}
+                key={m.id_modelo}
                 className="flex items-center justify-between py-1 border-b last:border-b-0"
               >
-                {editId === m.id_marca ? (
+                {editId === m.id_modelo ? (
                   <>
                     <input
                       type="text"
@@ -162,14 +162,14 @@ const MarcaForm = ({ onClose, onUpdateMarcas }) => {
                     <span>{m.nombre}</span>
                     <div className="space-x-2">
                       <button
-                        onClick={() => handleEditClick(m.id_marca, m.nombre)}
+                        onClick={() => handleEditClick(m.id_modelo, m.nombre)}
                         className="bg-blue-600 text-white text-sm px-2 py-0.5 rounded hover:bg-blue-700"
                         type="button"
                       >
                         Editar
                       </button>
                       <button
-                        onClick={() => handleDelete(m.id_marca)}
+                        onClick={() => handleDelete(m.id_modelo)}
                         className="bg-red-600 text-white text-sm px-2 py-0.5 rounded hover:bg-red-700"
                         type="button"
                       >
@@ -187,4 +187,4 @@ const MarcaForm = ({ onClose, onUpdateMarcas }) => {
   );
 };
 
-export default MarcaForm;
+export default ModeloForm;
