@@ -11,18 +11,20 @@ const API_URL_SUELAS = "http://127.0.0.1:5000/suelas/";
 
 const Indubitadas = () => {
   const [formData, setFormData] = useState({
+    categoria: "",
     marca: "",
     modelo: "",
     talle: "",
     alto: "",
     ancho: "",
     colores: "",
+    descripcion_general: "",
     //Arrays que guardan las figuras de cada cuadrante
     figurasSuperiorIzquierdo: [],
     figurasSuperiorDerecho: [],
+    figurasCentral: [],
     figurasInferiorDerecho: [],
     figurasInferiorIzquierdo: [],
-    figurasCentral: [],
   });
 
   const handleChange = (e) => {
@@ -58,7 +60,7 @@ const Indubitadas = () => {
     
     try {
       const calzadoRes = await axios.post(API_URL_CALZADOS, {
-        categoria: "N/A",
+        categoria: formData.categoria,
         marca: formData.marca,
         modelo: formData.modelo,
         talle: formData.talle,
@@ -75,7 +77,11 @@ const Indubitadas = () => {
         figuras.forEach((nombreFigura) => {
           const id_forma = obtenerIdForma(nombreFigura);
           if (id_forma) {
-            detalles.push({ id_forma, id_cuadrante, detalle_adicional: "" });
+            detalles.push({
+              id_forma,
+              id_cuadrante,
+              detalle_adicional: ""
+            });
           }
         });
       };
@@ -88,19 +94,21 @@ const Indubitadas = () => {
 
       await axios.post(API_URL_SUELAS, {
         id_calzado,
-        descripcion_general: "Huella indubitada registrada",
-        detalles,
+        descripcion_general: formData.descripcion_general || "Huella indubitada registrada por proveedor",
+        detalles
       });
 
       alert("Huella indubitada registrada con éxito ✅");
 
       setFormData({
+        categoria: "",
         marca: "",
         modelo: "",
         talle: "",
         alto: "",
         ancho: "",
         colores: "",
+        descripcion_general: "",
         figurasSuperiorIzquierdo: [],
         figurasSuperiorDerecho: [],
         figurasCentral: [],
@@ -113,7 +121,6 @@ const Indubitadas = () => {
     }
   };
 
-  //Reemplazar formulario Indubitadas por FiguraForm si mostrarFiguraForm es igual a true
   if (mostrarFiguraForm) {
     return (
       <motion.div
@@ -143,6 +150,22 @@ const Indubitadas = () => {
           Registrar Huella Indubitada
         </h2>
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Categoría */}
+          <div>
+            <label className="block text-sm font-semibold mb-1">Categoría:</label>
+            <select
+              name="categoria"
+              value={formData.categoria}
+              onChange={handleChange}
+              className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+            >
+              <option value="">Seleccionar categoría</option>
+              <option value="Deportivo">Deportivo</option>
+              <option value="Urbano">Urbano</option>
+              <option value="Trabajo">Trabajo</option>
+            </select>
+          </div>
+
           {["marca", "modelo", "talle", "alto", "ancho", "colores"].map((field) => (
             <div key={field}>
               <label className="block text-sm font-semibold mb-1 capitalize">{field}:</label>
@@ -157,7 +180,7 @@ const Indubitadas = () => {
               />  
             </div>
           ))}
-
+          
           {/* Seleccionaon de figuras por cuadrante */}
           <div>
             <label className = "block text-sm font-semibold mb-3 capitalize">Figuras de la Suela:</label>
@@ -166,6 +189,20 @@ const Indubitadas = () => {
               <FigurasDropdown title="Cuadrante Central" options={figuras.map(f => f.nombre)} selectedOptions={formData.figurasCentral} onChange={(selected) => setFormData(prev => ({ ...prev, figurasCentral: selected }))} />
               <FigurasDropdown title="Cuadrante Inferior Izquierdo" options={figuras.map(f => f.nombre)} selectedOptions={formData.figurasInferiorIzquierdo} onChange={(selected) => setFormData(prev => ({ ...prev, figurasInferiorIzquierdo: selected }))} />
               <FigurasDropdown title="Cuadrante Inferior Derecho" options={figuras.map(f => f.nombre)} selectedOptions={formData.figurasInferiorDerecho} onChange={(selected) => setFormData(prev => ({ ...prev, figurasInferiorDerecho: selected }))} />
+            {/* Campo para descripción general */}
+          <div className="mt-4">
+            <label className="block text-sm font-semibold mb-1">
+              Descripción General de la Suela:
+            </label>
+            <textarea
+              name="descripcion_general"
+              value={formData.descripcion_general}
+              onChange={handleChange}
+              placeholder="Ingrese una descripción general de la suela"
+              className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+              rows="3"
+            />
+          </div>
             {/* Botón Nueva Figura */}
             <button
               type="button"
