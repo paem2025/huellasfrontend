@@ -97,7 +97,7 @@ const Indubitadas = () => {
   }, []);
 
   const obtenerIdForma = (nombreFigura) => {
-    const figura = figuras.find((f) => f.nombre === nombreFigura);
+    const figura = figuras.find((f) => f.nombre.toLowerCase() === nombreFigura.toLowerCase());
     return figura ? figura.id_forma : null;
   };
 
@@ -306,23 +306,7 @@ const Indubitadas = () => {
           Registrar Huella Indubitada
         </h2>
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Categoría 
-          <div>
-            <label className="block text-sm font-semibold mb-1">Categoría:</label>
-            <select
-              name="categoria"
-              value={formData.categoria}
-              onChange={handleChange}
-              className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
-            >
-              <option value="">Seleccionar categoría</option>
-              <option value="Deportivo">Deportivo</option>
-              <option value="Urbano">Urbano</option>
-              <option value="Trabajo">Trabajo</option>
-            </select>
-          </div> */}
-
-          {/* Categoría, Marca y Modelo con select + botón */}
+          
           {/* Categoría */}
           <FigurasDropdown
             title="Categoría"
@@ -402,7 +386,7 @@ const Indubitadas = () => {
             </div>
           ))}
           
-          {/* Seleccionaon de figuras por cuadrante */}
+          {/* Seleccion de figuras por cuadrante */}
           <div>
             <label className = "block text-sm font-semibold mb-3 capitalize">Figuras de la Suela:</label>
               <FigurasDropdown title="Cuadrante Superior Izquierdo" options={figuras.map(f => f.nombre)} selectedOptions={formData.figurasSuperiorIzquierdo} onChange={(selected) => setFormData(prev => ({ ...prev, figurasSuperiorIzquierdo: selected }))} />

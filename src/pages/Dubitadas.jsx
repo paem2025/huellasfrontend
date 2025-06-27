@@ -2,12 +2,20 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import FiguraForm from "../components/FiguraForm";
+import MarcaForm from "../components/MarcaForm";
+import ModeloForm from "../components/ModeloForm.jsx";
+import CategoriaForm from "../components/CategoriaForm";
+import ColorForm from "../components/ColorForm";
 import FigurasDropdown from "../components/FigurasDropdown";
 import axios from "axios";
 
 const API_URL_FORMAS = "http://127.0.0.1:5000/formas/";
 const API_URL_CALZADOS = "http://127.0.0.1:5000/calzados/";
 const API_URL_SUELAS = "http://127.0.0.1:5000/suelas/";
+const API_URL_MARCAS = "http://127.0.0.1:5000/marcas/";
+const API_URL_MODELOS = "http://127.0.0.1:5000/modelos/";
+const API_URL_CATEGORIAS = "http://127.0.0.1:5000/categorias/";
+const API_URL_COLORES = "http://127.0.0.1:5000/colores/";
 
 const Dubitadas = () => {
   const [formData, setFormData] = useState({
@@ -17,7 +25,8 @@ const Dubitadas = () => {
     talle: "",
     alto: "",
     ancho: "",
-    colores: "",
+    colores: [],
+    descripcion_general: "",
     //Arrays que guardan las figuras de cada cuadrante
     figurasSuperiorIzquierdo: [],
     figurasSuperiorDerecho: [],
@@ -30,63 +39,147 @@ const Dubitadas = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const [mostrarFiguraForm, setMostrarFiguraForm] = useState(false);
+  const [mostrarMarcaForm, setMostrarMarcaForm] = useState(false);
+  const [mostrarModeloForm, setMostrarModeloForm] = useState(false);
+  const [mostrarCategoriaForm, setMostrarCategoriaForm] = useState(false);
+  const [mostrarColorForm, setMostrarColorForm] = useState(false);
+  
+  const [figuras, setFiguras] = useState([]);
+  const [marcas, setMarcas] = useState([]);
+  const [modelos, setModelos] = useState([]);
+  const [categorias, setCategorias] = useState([]);
+  const [colores, setColores] = useState([]);
+  
+  const fetchFiguras = () => {
+    axios
+      .get(API_URL_FORMAS)
+      .then((response) => setFiguras(response.data))
+      .catch((error) => console.error("Error al obtener figuras:", error));
+  };
+
+  const fetchMarcas = () => {
+    axios
+      .get(API_URL_MARCAS)
+      .then((response) => setMarcas(response.data))
+      .catch((error) => console.error("Error al obtener marcas:", error));
+  };
+
+  const fetchModelos = () => {
+    axios
+      .get(API_URL_MODELOS)
+      .then((response) => setModelos(response.data))
+      .catch((error) => console.error("Error al obtener modelos:", error));
+  };
+
+  const fetchCategorias = () => {
+    axios
+      .get(API_URL_CATEGORIAS)
+      .then((response) => setCategorias(response.data))
+      .catch((error) => console.error("Error al obtener categorías:", error));
+  };
+
+  const fetchColores = () => {
+    axios
+      .get(API_URL_COLORES)
+      .then((response) => setColores(response.data))
+      .catch((error) => console.error("Error al obtener colores:", error));
+  };
+  
+  useEffect(() => {
+    fetchFiguras();
+    fetchMarcas();
+    fetchModelos();
+    fetchCategorias();
+    fetchColores();
+  }, []);
+
+  const obtenerIdForma = (nombreFigura) => {
+    const figura = figuras.find((f) => f.nombre.toLowerCase() === nombreFigura.toLowerCase());
+    return figura ? figura.id_forma : null;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     try {
+    
+      const id_categoria = formData.categoria.trim()
+        ? categorias.find(c => c.nombre.toLowerCase() === formData.categoria.toLowerCase())?.id_categoria
+        : null;
+
+      const id_marca = formData.marca.trim()
+        ? marcas.find(m => m.nombre.toLowerCase() === formData.marca.toLowerCase())?.id_marca
+        : null;
+
+      const id_modelo = formData.modelo.trim()
+        ? modelos.find(m => m.nombre.toLowerCase() === formData.modelo.toLowerCase())?.id_modelo
+        : null;
+
+      const ids_colores = formData.colores.length > 0
+        ? colores.filter(c => formData.colores.includes(c.nombre)).map(c => c.id_color)
+        : [];
+
+      // Calzado
       const calzadoRes = await axios.post(API_URL_CALZADOS, {
-        categoria: formData.categoria,
-        marca: formData.marca,
-        modelo: formData.modelo,
-        talle: formData.talle,
-        alto: formData.alto,
-        ancho: formData.ancho,
-        colores: formData.colores,
+        id_categoria,
+        id_marca,
+        id_modelo,
+        talle: formData.talle || null,
+        alto: formData.alto || null,
+        ancho: formData.ancho || null,
+        id_colores: ids_colores.length > 0 ? ids_colores : [],
         tipo_registro: "dubitada",
       });
+      
+      const id_calzado = calzadoRes.data.calzado?.id_calzado;
 
-      const id_calzado = calzadoRes.data.id_calzado;
+      if (!id_calzado) {
+        alert("Error: no se recibió id_calzado del backend");
+        return;
+      }
 
-      const figurasResponse = await axios.get(API_URL_FORMAS);
-      const figurasDB = figurasResponse.data;
-
-      const obtenerIdForma = (nombreFigura) => {
-        const figura = figurasDB.find((f) => f.nombre === nombreFigura);
-        return figura ? figura.id_forma : null;
+      // Detalles suela
+      const cuadrantesMap = {
+        figurasSuperiorIzquierdo: 1,
+        figurasSuperiorDerecho: 2,
+        figurasInferiorIzquierdo: 3,
+        figurasInferiorDerecho: 4,
+        figurasCentral: 5,
       };
 
-      const detalles = [];
-      const agregarDetalles = (figuras, id_cuadrante) => {
-        figuras.forEach((nombreFigura) => {
+      let detalles = [];
+
+      Object.entries(cuadrantesMap).forEach(([key, id_cuadrante]) => {
+        formData[key].forEach((nombreFigura) => {
           const id_forma = obtenerIdForma(nombreFigura);
           if (id_forma) {
-            detalles.push({ id_forma, id_cuadrante, detalle_adicional: "" });
+            detalles.push({
+              id_cuadrante,
+              id_forma,
+              detalle_adicional: "",
+            });
           }
         });
-      };
+      });
 
-      agregarDetalles(formData.figurasSuperiorIzquierdo, 1);
-      agregarDetalles(formData.figurasSuperiorDerecho, 2);
-      agregarDetalles(formData.figurasInferiorIzquierdo, 3);
-      agregarDetalles(formData.figurasInferiorDerecho, 4);
-      agregarDetalles(formData.figurasCentral, 5);
-
+      // Suela
       await axios.post(API_URL_SUELAS, {
         id_calzado,
-        descripcion_general: formData.descripcion_general || "Huella dubitada registrada",
+        descripcion_general: formData.descripcion_general || "",
         detalles,
       });
 
-      alert("Huella dubitada registrada con éxito ✅");
+      alert("Huella dubitada registrada exitosamente");
 
       setFormData({
         categoria: "",
         marca: "",
         modelo: "",
+        colores: [],
         talle: "",
         alto: "",
         ancho: "",
-        colores: "",
         descripcion_general: "",
         figurasSuperiorIzquierdo: [],
         figurasSuperiorDerecho: [],
@@ -97,29 +190,9 @@ const Dubitadas = () => {
 
     } catch (error) {
       console.error("Error al registrar huella dubitada:", error);
-      alert("❌ Error al registrar huella dubitada");
+      alert("Error al registrar huella dubitada");
     }
   };
-
-  const [mostrarFiguraForm, setMostrarFiguraForm] = useState(false);
-  
-  //Estado para figuras
-  const [figuras, setFiguras] = useState([]);
-  
-  const fetchFiguras = () => {
-    axios
-      .get(API_URL_FORMAS)
-      .then((response) => {
-        setFiguras(response.data);
-      })
-      .catch((error) => {
-        console.error("Error al obtener figuras:", error);
-      });
-  };
-  
-  useEffect(() => {
-    fetchFiguras();
-  }, []);
       
   const renderInput = (name, label, placeholder = "") => (
     <div key={name}>
@@ -135,7 +208,7 @@ const Dubitadas = () => {
     </div>
   );
 
-  //Reemplazar formulario Dubitadas por FiguraForm si mostrarFiguraForm es igual a true
+  //Reemplazar formulario 
   if (mostrarFiguraForm) {
     return (
       <motion.div
@@ -152,6 +225,70 @@ const Dubitadas = () => {
     );
   }
 
+  if (mostrarMarcaForm) {
+    return (
+      <motion.div
+        className="p-6"
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+      >
+        <MarcaForm
+          onClose={() => setMostrarMarcaForm(false)}
+          onUpdateMarcas={fetchMarcas}
+        />
+      </motion.div>
+    );
+  }
+
+  if (mostrarModeloForm) {
+    return (
+      <motion.div
+        className="p-6"
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+      >
+        <ModeloForm
+          onClose={() => setMostrarModeloForm(false)}
+          onUpdateModelos={fetchModelos}
+        />
+      </motion.div>
+    );
+  }
+
+  if (mostrarCategoriaForm) {
+    return (
+      <motion.div
+        className="p-6"
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+      >
+        <CategoriaForm
+          onClose={() => setMostrarCategoriaForm(false)}
+          onUpdateCategorias={fetchCategorias}
+        />
+      </motion.div>
+    );
+  }
+
+  if (mostrarColorForm) {
+    return (
+      <motion.div
+        className="p-6"
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+      >
+        <ColorForm
+          onClose={() => setMostrarColorForm(false)}
+          onUpdateColores={fetchColores}
+        />
+      </motion.div>
+    );
+  }
+
   return (
     <div className="bg-white p-8 rounded-2xl shadow-lg max-w-xl mx-auto transition hover:shadow-2xl">
       <h2 className="text-2xl font-bold text-green-700 text-center mb-6">
@@ -160,31 +297,77 @@ const Dubitadas = () => {
       <form onSubmit={handleSubmit} className="space-y-4">
 
         {/* Categoría */}
-        <div>
-          <label className="block text-sm font-semibold mb-1">Categoría:</label>
-          <select
-            name="categoria"
-            value={formData.categoria}
-            onChange={handleChange}
-            className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400"
-          >
-            <option value="">Seleccionar categoría</option>
-            <option value="Deportivo">Deportivo</option>
-            <option value="Urbano">Urbano</option>
-            <option value="Trabajo">Trabajo</option>
-          </select>
-        </div>
+        <FigurasDropdown
+          title="Categoría"
+          options={categorias.map(c => c.nombre)}
+          selectedOptions={formData.categoria ? [formData.categoria] : []}
+          onChange={(selected) => setFormData(prev => ({ ...prev, categoria: selected[0] || "" }))}
+          multiple={false}
+        />
+        <button
+          type="button"
+          onClick={() => setMostrarCategoriaForm(true)}
+          className="mb-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white py-2 px-4 rounded-lg font-semibold hover:from-blue-700 hover:to-blue-800 transition duration-300 shadow-md"
+        >
+          Nueva Categoría
+        </button>
+
+        {/* Marca */}
+        <FigurasDropdown
+          title="Marca"
+          options={marcas.map(m => m.nombre)}
+          selectedOptions={formData.marca ? [formData.marca] : []}
+          onChange={(selected) => setFormData(prev => ({ ...prev, marca: selected[0] || "" }))}
+          multiple={false}
+        />
+        <button
+          type="button"
+          onClick={() => setMostrarMarcaForm(true)}
+          className="mb-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white py-2 px-4 rounded-lg font-semibold hover:from-blue-700 hover:to-blue-800 transition duration-300 shadow-md"
+        >
+          Nueva Marca
+        </button>
+
+        {/* Modelo */}
+        <FigurasDropdown
+          title="Modelo"
+          options={modelos.map(m => m.nombre)}
+          selectedOptions={formData.modelo ? [formData.modelo] : []}
+          onChange={(selected) => setFormData(prev => ({ ...prev, modelo: selected[0] || "" }))}
+          multiple={false}
+        />
+        <button
+          type="button"
+          onClick={() => setMostrarModeloForm(true)}
+          className="mb-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white py-2 px-4 rounded-lg font-semibold hover:from-blue-700 hover:to-blue-800 transition duration-300 shadow-md"
+        >
+          Nuevo Modelo
+        </button>
+
+        {/* Colores */}
+        <FigurasDropdown
+          title="Colores"
+          options={colores.map(c => c.nombre)}
+          selectedOptions={formData.colores}
+          onChange={(selected) => setFormData(prev => ({ ...prev, colores: selected }))}
+          multiple={true}
+        />
+        <button
+          type="button"
+          onClick={() => setMostrarColorForm(true)}
+          className="mb-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white py-2 px-4 rounded-lg font-semibold hover:from-blue-700 hover:to-blue-800 transition duration-300 shadow-md"
+        >
+          Nuevo Color
+        </button>
+
 
         <hr className="my-4" />
 
-        {renderInput("marca", "Marca")}
-        {renderInput("modelo", "Modelo")}
         {renderInput("talle", "Talle")}
         {renderInput("alto", "Alto", "Ingrese alto")}
         {renderInput("ancho", "Ancho", "Ingrese ancho")}
-        {renderInput("colores", "Colores", "Ingrese colores")}
 
-        {/* Seleccionaon de figuras por cuadrante */}
+        {/* Seleccion de figuras por cuadrante */}
         <div>
           <label className="block text-sm font-semibold mb-3 capitalize">Figuras de la Suela:</label>
             <FigurasDropdown title="Cuadrante Superior Izquierdo" options={figuras.map(f => f.nombre)} selectedOptions={formData.figurasSuperiorIzquierdo} onChange={(selected) => setFormData(prev => ({ ...prev, figurasSuperiorIzquierdo: selected }))} />
