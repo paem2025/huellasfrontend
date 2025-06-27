@@ -79,72 +79,71 @@ const ListadoCalzados = () => {
   }, []);
 
   const fetchCalzados = async () => {
-    try {
-      let endpoint = "";
+  try {
+    let endpoint = API_URL_CALZADOS; 
+    let calzadosData;
 
-      switch (filter) {
-        case "dubitada":
-          endpoint = `${API_URL_CALZADOS}getAllDubitadas`;
-          break;
-        case "indubitada":
-          endpoint = `${API_URL_CALZADOS}getAllIndubitadas`;
-          break;
-        default:
-          endpoint = API_URL_CALZADOS;
+    if (filter === "dubitada") {
+      endpoint = `${API_URL_CALZADOS}getAllDubitadas`;
+      const response = await axios.get(endpoint);
+      calzadosData = response.data;
+    } 
+    else if (filter === "indubitada_proveedor" || filter === "indubitada_comisaria") {
+      const response = await axios.get(API_URL_CALZADOS);
+      calzadosData = response.data.filter(item => 
+        item.tipo_registro === filter
+      );
+    }
+    else {
+      const response = await axios.get(endpoint);
+      calzadosData = response.data;
+    }
+
+
+    const formattedData = calzadosData.map((item) => {
+      const marca =
+        marcas.find((m) => m.id_marca === item.id_marca)?.nombre ||
+        "Sin marca";
+      const modelo =
+        modelos.find((m) => m.id_modelo === item.id_modelo)?.nombre ||
+        "Sin modelo";
+      const categoria =
+        categorias.find((c) => c.id_categoria === item.id_categoria)
+          ?.nombre || "Sin categoría";
+
+      let coloresNombres = "Sin colores";
+      let idsColores = [];
+
+      if (Array.isArray(item.colores) && item.colores.length > 0) {
+        if (typeof item.colores[0] === "string") {
+          coloresNombres = item.colores.join(", ");
+          idsColores = item.colores
+            .map((nombre) => colores.find((c) => c.nombre === nombre)?.id_color)
+            .filter(Boolean);
+        } else {
+          coloresNombres = item.colores.map((c) => c.nombre).join(", ");
+          idsColores = item.colores.map((c) => c.id_color);
+        }
       }
 
-      const response = await axios.get(endpoint);
-      const calzadosData = response.data;
-
-      // Formatear los datos para mostrar
-      const formattedData = calzadosData.map((item) => {
-        // Obtener nombres de relaciones
-        const marca =
-          marcas.find((m) => m.id_marca === item.id_marca)?.nombre ||
-          "Sin marca";
-        const modelo =
-          modelos.find((m) => m.id_modelo === item.id_modelo)?.nombre ||
-          "Sin modelo";
-        const categoria =
-          categorias.find((c) => c.id_categoria === item.id_categoria)
-            ?.nombre || "Sin categoría";
-
-        // Obtener nombres de colores y sus IDs
-        let coloresNombres = "Sin colores";
-        let idsColores = [];
-
-        if (Array.isArray(item.colores) && item.colores.length > 0) {
-          if (typeof item.colores[0] === "string") {
-            // Si vienen como strings
-            coloresNombres = item.colores.join(", ");
-            idsColores = item.colores
-              .map((nombre) => colores.find((c) => c.nombre === nombre)?.id_color)
-              .filter(Boolean);
-          } else {
-            // Si vienen como objetos
-            coloresNombres = item.colores.map((c) => c.nombre).join(", ");
-            idsColores = item.colores.map((c) => c.id_color);
-          }
-        }
-
-        return {
-          id: item.id_calzado,
-          marca,
-          modelo,
-          talle: item.talle,
-          alto: item.alto,
-          ancho: item.ancho,
-          medidas: `${item.alto}cm x ${item.ancho}cm`,
-          colores: coloresNombres,
-          categoria,
-          tipo: item.tipo_registro,
-          // Guardar IDs para edición
-          id_marca: item.id_marca,
-          id_modelo: item.id_modelo,
-          id_categoria: item.id_categoria,
-          id_colores: idsColores,
-        };
-      });
+      return {
+        id: item.id_calzado,
+        marca,
+        modelo,
+        talle: item.talle,
+        alto: item.alto,
+        ancho: item.ancho,
+        medidas: `${item.alto}cm x ${item.ancho}cm`,
+        colores: coloresNombres,
+        categoria,
+        tipo: item.tipo_registro,
+        // Guardar IDs para edición
+        id_marca: item.id_marca,
+        id_modelo: item.id_modelo,
+        id_categoria: item.id_categoria,
+        id_colores: idsColores,
+      };
+    });
 
       setCalzados(formattedData);
     } catch (error) {
@@ -187,7 +186,7 @@ const ListadoCalzados = () => {
 
   const handleSaveEdit = async () => {
     try {
-      // Preparar los datos en el formato que espera el backend
+
       const dataToSend = {
         alto: editCalzado.alto || null,
         ancho: editCalzado.ancho || null,
@@ -201,7 +200,7 @@ const ListadoCalzados = () => {
                   []
       };
 
-      console.log("Datos a enviar:", dataToSend); // Para depuración
+      console.log("Datos a enviar:", dataToSend); 
 
       const response = await axios.patch(
         `${API_URL_CALZADOS}${editId}`,
@@ -213,7 +212,7 @@ const ListadoCalzados = () => {
         }
       );
 
-      console.log("Respuesta del servidor:", response.data); // Para depuración
+      console.log("Respuesta del servidor:", response.data);
       alert("Calzado actualizado exitosamente");
       setEditId(null);
       fetchCalzados();
@@ -306,14 +305,24 @@ const ListadoCalzados = () => {
               Todos
             </button>
             <button
-              onClick={() => setFilter("indubitada")}
+              onClick={() => setFilter("indubitada_proveedor")}
               className={`px-4 py-2 rounded-lg ${
-                filter === "indubitada"
+                filter === "indubitada_proveedor"
                   ? "bg-purple-600 text-white"
                   : "bg-gray-200"
               }`}
             >
-              Indubitadas
+              Indubitadas (Proveedor)
+            </button>
+            <button
+              onClick={() => setFilter("indubitada_comisaria")}
+              className={`px-4 py-2 rounded-lg ${
+                filter === "indubitada_comisaria"
+                  ? "bg-purple-600 text-white"
+                  : "bg-gray-200"
+              }`}
+            >
+              Indubitadas (Comisaría)
             </button>
             <button
               onClick={() => setFilter("dubitada")}
