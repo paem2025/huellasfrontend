@@ -50,6 +50,9 @@ const ColorForm = ({ onClose, onUpdateColores }) => {
   };
 
   const handleSaveEdit = () => {
+    if (!window.confirm("¿Estás seguro de que deseas editar este color?")) {
+      return;
+    }
     axios
       .patch(`${API_URL_COLORES}${editId}`, { nombre: editNombre })
       .then(() => {
@@ -70,6 +73,9 @@ const ColorForm = ({ onClose, onUpdateColores }) => {
   };
 
   const handleDelete = (id) => {
+    if (!window.confirm("¿Estás seguro de que deseas eliminar este color?")) {
+      return;
+    }
     axios
       .delete(`${API_URL_COLORES}${id}`)
       .then(() => {

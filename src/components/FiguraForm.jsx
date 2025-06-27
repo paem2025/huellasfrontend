@@ -46,6 +46,9 @@ const FiguraForm = ({ onClose, onUpdateFiguras }) => {
   };
 
   const handleSaveEdit = () => {
+    if (!window.confirm("¿Estás seguro de que deseas editar esta figura?")) {
+      return;
+    }
     axios
       .patch(`${API_URL_FIGURAS}${editId}`, { nombre: editNombre })
       .then(() => {
@@ -66,6 +69,9 @@ const FiguraForm = ({ onClose, onUpdateFiguras }) => {
   };
 
   const handleDelete = (id) => {
+    if (!window.confirm("¿Estás seguro de que deseas eliminar esta figura?")) {
+      return;
+    }
     axios
       .delete(`${API_URL_FIGURAS}${id}`)
       .then(() => {

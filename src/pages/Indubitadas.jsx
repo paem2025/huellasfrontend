@@ -105,6 +105,16 @@ const Indubitadas = () => {
     e.preventDefault();
 
     try {
+
+      if (!formData.categoria || formData.categoria.trim() === "" ||
+          !formData.marca || formData.marca.trim() === "" ||
+          !formData.modelo || formData.modelo.trim() === "" ||
+          !formData.colores || formData.colores.length === 0
+      ) {
+        alert("Error: Los campos categoría, marca, modelo y colores son obligatorios.");
+        return;
+      }
+
       const categoriaObj = categorias.find(c => c.nombre.toLowerCase() === formData.categoria.toLowerCase());
       const id_categoria = categoriaObj?.id_categoria;
 
@@ -119,7 +129,7 @@ const Indubitadas = () => {
         .map(c => c.id_color);
 
       if (!id_categoria || !id_marca || !id_modelo || ids_colores.length === 0) {
-        alert("Error: Verificá que categoría, marca, modelo y colores existan en el sistema.");
+        alert("Error: La categoría, marca, modelo y colores seleccionados no existen en el sistema.");
         return;
       }
 
@@ -144,11 +154,11 @@ const Indubitadas = () => {
 
       // Detalles suela
       const cuadrantesMap = {
-        figurasSuperiorIzquierdo: 1,
+        figurasSuperiorIzquierdo: 1, //Los IDs corresponden a los cuadrantes que deben estar insertados en este mismo orden
         figurasSuperiorDerecho: 2,
-        figurasCentral: 3,
+        figurasInferiorIzquierdo: 3,
         figurasInferiorDerecho: 4,
-        figurasInferiorIzquierdo: 5,
+        figurasCentral: 5,
       };
 
       let detalles = [];
@@ -174,6 +184,22 @@ const Indubitadas = () => {
       });
 
       alert("Huella indubitada registrada exitosamente");
+
+      setFormData({
+        categoria: "",
+        marca: "",
+        modelo: "",
+        colores: [],
+        talle: "",
+        alto: "",
+        ancho: "",
+        descripcion_general: "",
+        figurasSuperiorIzquierdo: [],
+        figurasSuperiorDerecho: [],
+        figurasCentral: [],
+        figurasInferiorDerecho: [],
+        figurasInferiorIzquierdo: [],
+      });
 
     } catch (error) {
       console.error("Error al registrar huella indubitada:", error);

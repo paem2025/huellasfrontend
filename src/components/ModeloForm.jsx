@@ -48,6 +48,9 @@ const ModeloForm = ({ onClose, onUpdateModelos }) => {
   };
 
   const handleSaveEdit = () => {
+    if (!window.confirm("¿Estás seguro de que deseas editar este modelo?")) {
+      return;
+    }
     axios
       .patch(`${API_URL_MODELOS}${editId}`, { nombre: editNombre })
       .then(() => {
@@ -68,6 +71,9 @@ const ModeloForm = ({ onClose, onUpdateModelos }) => {
   };
 
   const handleDelete = (id) => {
+    if (!window.confirm("¿Estás seguro de que deseas eliminar este modelo?")) {
+      return;
+    }
     axios
       .delete(`${API_URL_MODELOS}${id}`)
       .then(() => {

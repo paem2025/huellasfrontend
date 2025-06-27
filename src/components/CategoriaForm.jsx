@@ -50,6 +50,9 @@ const CategoriaForm = ({ onClose, onUpdateCategorias }) => {
   };
 
   const handleSaveEdit = () => {
+    if (!window.confirm("¿Estás seguro de que deseas editar esta categoria?")) {
+      return;
+    }
     axios
       .patch(`${API_URL_CATEGORIAS}${editId}`, { nombre: editNombre })
       .then(() => {
@@ -70,6 +73,9 @@ const CategoriaForm = ({ onClose, onUpdateCategorias }) => {
   };
 
   const handleDelete = (id) => {
+    if (!window.confirm("¿Estás seguro de que deseas eliminar esta categoria?")) {
+      return;
+    }
     axios
       .delete(`${API_URL_CATEGORIAS}${id}`)
       .then(() => {

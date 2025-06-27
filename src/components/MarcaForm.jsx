@@ -46,6 +46,9 @@ const MarcaForm = ({ onClose, onUpdateMarcas }) => {
   };
 
   const handleSaveEdit = () => {
+    if (!window.confirm("¿Estás seguro de que deseas editar esta marca?")) {
+      return;
+    }
     axios
       .patch(`${API_URL_MARCAS}${editId}`, { nombre: editNombre })
       .then(() => {
@@ -66,6 +69,9 @@ const MarcaForm = ({ onClose, onUpdateMarcas }) => {
   };
 
   const handleDelete = (id) => {
+    if (!window.confirm("¿Estás seguro de que deseas eliminar esta marca?")) {
+      return;
+    }
     axios
       .delete(`${API_URL_MARCAS}${id}`)
       .then(() => {
