@@ -109,22 +109,22 @@ const ListadoCalzados = () => {
           categorias.find((c) => c.id_categoria === item.id_categoria)
             ?.nombre || "Sin categoría";
 
-        // Obtener nombres de colores
+        // Obtener nombres de colores y sus IDs
         let coloresNombres = "Sin colores";
         let idsColores = [];
 
-        // Manejar ambos casos: cuando vienen objetos completos o solo IDs
-        if (item.colores && item.colores.length > 0) {
-          // Cuando vienen objetos completos
-          coloresNombres = item.colores.map((c) => c.nombre).join(", ");
-          idsColores = item.colores.map((c) => c.id_color);
-        } else if (item.id_colores && item.id_colores.length > 0) {
-          // Cuando solo vienen IDs
-          idsColores = item.id_colores;
-          const nombres = idsColores
-            .map((id) => colores.find((c) => c.id_color === id)?.nombre)
-            .filter(Boolean);
-          coloresNombres = nombres.length > 0 ? nombres.join(", ") : "Sin colores";
+        if (Array.isArray(item.colores) && item.colores.length > 0) {
+          if (typeof item.colores[0] === "string") {
+            // Si vienen como strings
+            coloresNombres = item.colores.join(", ");
+            idsColores = item.colores
+              .map((nombre) => colores.find((c) => c.nombre === nombre)?.id_color)
+              .filter(Boolean);
+          } else {
+            // Si vienen como objetos
+            coloresNombres = item.colores.map((c) => c.nombre).join(", ");
+            idsColores = item.colores.map((c) => c.id_color);
+          }
         }
 
         return {
