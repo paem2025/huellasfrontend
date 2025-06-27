@@ -8,14 +8,7 @@ import CategoriaForm from "../components/CategoriaForm";
 import ColorForm from "../components/ColorForm";
 import FigurasDropdown from "../components/FigurasDropdown";
 import axios from "axios";
-
-const API_URL_FORMAS = "http://127.0.0.1:5000/formas/";
-const API_URL_CALZADOS = "http://127.0.0.1:5000/calzados/";
-const API_URL_SUELAS = "http://127.0.0.1:5000/suelas/";
-const API_URL_MARCAS = "http://127.0.0.1:5000/marcas/";
-const API_URL_MODELOS = "http://127.0.0.1:5000/modelos/";
-const API_URL_CATEGORIAS = "http://127.0.0.1:5000/categorias/";
-const API_URL_COLORES = "http://127.0.0.1:5000/colores/";
+import { API_URLS } from "../config/api";
 
 const Indubitadas = () => {
   const [formData, setFormData] = useState({
@@ -55,35 +48,35 @@ const Indubitadas = () => {
 
   const fetchFiguras = () => {
     axios
-      .get(API_URL_FORMAS)
+      .get(API_URLS.FORMAS)
       .then((response) => setFiguras(response.data))
       .catch((error) => console.error("Error al obtener figuras:", error));
   };
 
   const fetchMarcas = () => {
     axios
-      .get(API_URL_MARCAS)
+      .get(API_URLS.MARCAS)
       .then((response) => setMarcas(response.data))
       .catch((error) => console.error("Error al obtener marcas:", error));
   };
 
   const fetchModelos = () => {
     axios
-      .get(API_URL_MODELOS)
+      .get(API_URLS.MODELOS)
       .then((response) => setModelos(response.data))
       .catch((error) => console.error("Error al obtener modelos:", error));
   };
 
   const fetchCategorias = () => {
     axios
-      .get(API_URL_CATEGORIAS)
+      .get(API_URLS.CATEGORIAS)
       .then((response) => setCategorias(response.data))
       .catch((error) => console.error("Error al obtener categorías:", error));
   };
 
   const fetchColores = () => {
     axios
-      .get(API_URL_COLORES)
+      .get(API_URLS.COLORES)
       .then((response) => setColores(response.data))
       .catch((error) => console.error("Error al obtener colores:", error));
   };
@@ -134,7 +127,7 @@ const Indubitadas = () => {
       }
 
       // Calzado
-      const calzadoRes = await axios.post(API_URL_CALZADOS, {
+      const calzadoRes = await axios.post(API_URLS.CALZADOS, {
         id_categoria,
         id_marca,
         id_modelo,
@@ -177,7 +170,7 @@ const Indubitadas = () => {
       });
 
       // Suela
-      await axios.post(API_URL_SUELAS, {
+      await axios.post(API_URLS.SUELAS, {
         id_calzado,
         descripcion_general: formData.descripcion_general || "",
         detalles,

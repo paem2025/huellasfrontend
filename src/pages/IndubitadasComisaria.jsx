@@ -3,10 +3,7 @@ import { motion } from "framer-motion";
 import FiguraForm from "../components/FiguraForm";
 import FigurasDropdown from "../components/FigurasDropdown";
 import axios from "axios";
-
-const API_URL_FORMAS = "http://127.0.0.1:5000/formas/";
-const API_URL_CALZADOS = "http://127.0.0.1:5000/calzados/";
-const API_URL_SUELAS = "http://127.0.0.1:5000/suelas/";
+import { API_URLS } from "../config/api";
 
 const IndubitadasComisaria = () => {
   const [formData, setFormData] = useState({
@@ -40,7 +37,7 @@ const IndubitadasComisaria = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const calzadoRes = await axios.post(API_URL_CALZADOS, {
+      const calzadoRes = await axios.post(API_URLS.CALZADOS, {
         categoria: formData.categoria,
         marca: formData.marca,
         modelo: formData.modelo,
@@ -73,7 +70,7 @@ const IndubitadasComisaria = () => {
       agregarDetalles(formData.figurasInferiorDerecho, 4);
       agregarDetalles(formData.figurasCentral, 5);
 
-      await axios.post(API_URL_SUELAS, {
+      await axios.post(API_URLS.SUELAS, {
         id_calzado,
         descripcion_general: formData.descripcion_general || 
           `Huella indubitada registrada por ${formData.comisaria} (${formData.jurisdiccion}) - ${formData.nombre} ${formData.apellido} (DNI: ${formData.dni})`,
@@ -115,7 +112,7 @@ const IndubitadasComisaria = () => {
 
   const fetchFiguras = () => {
     axios
-      .get(API_URL_FORMAS)
+      .get(API_URLS.FORMAS)
       .then((response) => {
         setFiguras(response.data);
       })
