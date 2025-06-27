@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-
-const API_URL_COLORES = "http://127.0.0.1:5000/colores/";
+import { API_URLS } from "../config/api";
 
 const ColorForm = ({ onClose, onUpdateColores }) => {
   const [color, setColor] = useState("");
@@ -15,7 +14,7 @@ const ColorForm = ({ onClose, onUpdateColores }) => {
 
   const fetchColores = () => {
     axios
-      .get(API_URL_COLORES)
+      .get(API_URLS.COLORES)
       .then((res) => {
         setColores(res.data);
       })
@@ -32,7 +31,7 @@ const ColorForm = ({ onClose, onUpdateColores }) => {
     e.preventDefault();
 
     axios
-      .post(API_URL_COLORES, { nombre: color })
+      .post(API_URLS.COLORES, { nombre: color })
       .then(() => {
         alert("Color cargado correctamente");
         setColor("");
@@ -54,7 +53,7 @@ const ColorForm = ({ onClose, onUpdateColores }) => {
       return;
     }
     axios
-      .patch(`${API_URL_COLORES}${editId}`, { nombre: editNombre })
+      .patch(`${API_URLS.COLORES}${editId}`, { nombre: editNombre })
       .then(() => {
         alert("Color editado correctamente");
         setEditId(null);
@@ -77,7 +76,7 @@ const ColorForm = ({ onClose, onUpdateColores }) => {
       return;
     }
     axios
-      .delete(`${API_URL_COLORES}${id}`)
+      .delete(`${API_URLS.COLORES}${id}`)
       .then(() => {
         alert("Color eliminado correctamente");
         fetchColores();

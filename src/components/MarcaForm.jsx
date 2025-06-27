@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-
-const API_URL_MARCAS = "http://127.0.0.1:5000/marcas/";
+import { API_URLS } from "../config/api";
 
 const MarcaForm = ({ onClose, onUpdateMarcas }) => {
   const [marca, setMarca] = useState("");
@@ -15,7 +14,7 @@ const MarcaForm = ({ onClose, onUpdateMarcas }) => {
 
   const fetchMarcas = () => {
     axios
-        .get(API_URL_MARCAS)
+        .get(API_URLS.MARCAS)
         .then((res) => setMarcas(res.data))
         .catch((error) => console.error("Error al obtener marcas:", error));
   };
@@ -28,7 +27,7 @@ const MarcaForm = ({ onClose, onUpdateMarcas }) => {
     e.preventDefault();
 
     axios
-      .post(API_URL_MARCAS, { nombre: marca })
+      .post(API_URLS.MARCAS, { nombre: marca })
       .then(() => {
         alert("Marca cargada correctamente");
         setMarca("");
@@ -50,7 +49,7 @@ const MarcaForm = ({ onClose, onUpdateMarcas }) => {
       return;
     }
     axios
-      .patch(`${API_URL_MARCAS}${editId}`, { nombre: editNombre })
+      .patch(`${API_URLS.MARCAS}${editId}`, { nombre: editNombre })
       .then(() => {
         alert("Marca editada correctamente");
         setEditId(null);
@@ -73,7 +72,7 @@ const MarcaForm = ({ onClose, onUpdateMarcas }) => {
       return;
     }
     axios
-      .delete(`${API_URL_MARCAS}${id}`)
+      .delete(`${API_URLS.MARCAS}${id}`)
       .then(() => {
         alert("Marca eliminada correctamente");
         fetchMarcas();

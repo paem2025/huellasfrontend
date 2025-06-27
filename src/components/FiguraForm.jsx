@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-
-const API_URL_FIGURAS = "http://127.0.0.1:5000/formas/";
+import { API_URLS } from "../config/api";
 
 const FiguraForm = ({ onClose, onUpdateFiguras }) => {
   const [figura, setFigura] = useState("");
@@ -15,7 +14,7 @@ const FiguraForm = ({ onClose, onUpdateFiguras }) => {
 
   const fetchFiguras = () => {
     axios
-      .get(API_URL_FIGURAS)
+      .get(API_URLS.FORMAS)
       .then((res) => setFiguras(res.data))
       .catch((error) => console.error("Error al obtener figuras:", error));
   };
@@ -28,7 +27,7 @@ const FiguraForm = ({ onClose, onUpdateFiguras }) => {
     e.preventDefault();
 
     axios
-      .post(API_URL_FIGURAS, { nombre: figura })
+      .post(API_URLS.FORMAS, { nombre: figura })
       .then(() => {
         alert("Figura cargada correctamente");
         setFigura("");
@@ -50,7 +49,7 @@ const FiguraForm = ({ onClose, onUpdateFiguras }) => {
       return;
     }
     axios
-      .patch(`${API_URL_FIGURAS}${editId}`, { nombre: editNombre })
+      .patch(`${API_URLS.FORMAS}${editId}`, { nombre: editNombre })
       .then(() => {
         alert("Figura editada correctamente");
         setEditId(null);
@@ -73,7 +72,7 @@ const FiguraForm = ({ onClose, onUpdateFiguras }) => {
       return;
     }
     axios
-      .delete(`${API_URL_FIGURAS}${id}`)
+      .delete(`${API_URLS.FORMAS}${id}`)
       .then(() => {
         alert("Figura eliminada correctamente");
         fetchFiguras();

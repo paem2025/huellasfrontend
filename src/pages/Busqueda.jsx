@@ -3,8 +3,7 @@ import { motion } from "framer-motion";
 import FiguraForm from "../components/FiguraForm";
 import FigurasDropdown from "../components/FigurasDropdown";
 import axios from "axios";
-
-const API_URL_FORMAS = "http://127.0.0.1:5000/formas/";
+import { API_URLS } from "../config/api";
 
 const Busqueda = () => {
   const [searchCriteria, setSearchCriteria] = useState({
@@ -65,7 +64,7 @@ const Busqueda = () => {
 
   const fetchFiguras = () => {
     axios
-      .get(API_URL_FORMAS)
+      .get(API_URLS.FORMAS)
       .then((response) => {
         const nombresFiguras = response.data.map(f => f.nombre);
         setFiguras(nombresFiguras);

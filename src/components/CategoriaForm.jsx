@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-
-const API_URL_CATEGORIAS = "http://127.0.0.1:5000/categorias/";
+import { API_URLS } from "../config/api";
 
 const CategoriaForm = ({ onClose, onUpdateCategorias }) => {
   const [categoria, setCategoria] = useState("");
@@ -15,7 +14,7 @@ const CategoriaForm = ({ onClose, onUpdateCategorias }) => {
 
   const fetchCategorias = () => {
     axios
-      .get(API_URL_CATEGORIAS)
+      .get(API_URLS.CATEGORIAS)
       .then((res) => {
         setCategorias(res.data);
       })
@@ -32,7 +31,7 @@ const CategoriaForm = ({ onClose, onUpdateCategorias }) => {
     e.preventDefault();
 
     axios
-      .post(API_URL_CATEGORIAS, { nombre: categoria })
+      .post(API_URLS.CATEGORIAS, { nombre: categoria })
       .then(() => {
         alert("Categoría cargada correctamente");
         setCategoria("");
@@ -54,7 +53,7 @@ const CategoriaForm = ({ onClose, onUpdateCategorias }) => {
       return;
     }
     axios
-      .patch(`${API_URL_CATEGORIAS}${editId}`, { nombre: editNombre })
+      .patch(`${API_URLS.CATEGORIAS}${editId}`, { nombre: editNombre })
       .then(() => {
         alert("Categoría editada correctamente");
         setEditId(null);
@@ -77,7 +76,7 @@ const CategoriaForm = ({ onClose, onUpdateCategorias }) => {
       return;
     }
     axios
-      .delete(`${API_URL_CATEGORIAS}${id}`)
+      .delete(`${API_URLS.CATEGORIAS}${id}`)
       .then(() => {
         alert("Categoría eliminada correctamente");
         fetchCategorias();

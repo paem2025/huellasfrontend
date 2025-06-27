@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-
-const API_URL_MODELOS = "http://127.0.0.1:5000/modelos/";
+import { API_URLS } from "../config/api";
 
 const ModeloForm = ({ onClose, onUpdateModelos }) => {
   const [modelo, setModelo] = useState("");
@@ -15,7 +14,7 @@ const ModeloForm = ({ onClose, onUpdateModelos }) => {
 
   const fetchModelos = () => {
     axios
-      .get(API_URL_MODELOS)
+      .get(API_URLS.MODELOS)
       .then((res) => setModelos(res.data))
       .catch((error) => {
         console.error("Error al obtener modelos:", error);
@@ -30,7 +29,7 @@ const ModeloForm = ({ onClose, onUpdateModelos }) => {
     e.preventDefault();
 
     axios
-      .post(API_URL_MODELOS, { nombre: modelo })
+      .post(API_URLS.MODELOS, { nombre: modelo })
       .then(() => {
         alert("Modelo cargado correctamente");
         setModelo("");
@@ -52,7 +51,7 @@ const ModeloForm = ({ onClose, onUpdateModelos }) => {
       return;
     }
     axios
-      .patch(`${API_URL_MODELOS}${editId}`, { nombre: editNombre })
+      .patch(`${API_URLS.MODELOS}${editId}`, { nombre: editNombre })
       .then(() => {
         alert("Modelo editado correctamente");
         setEditId(null);
@@ -75,7 +74,7 @@ const ModeloForm = ({ onClose, onUpdateModelos }) => {
       return;
     }
     axios
-      .delete(`${API_URL_MODELOS}${id}`)
+      .delete(`${API_URLS.MODELOS}${id}`)
       .then(() => {
         alert("Modelo eliminado correctamente");
         fetchModelos();
