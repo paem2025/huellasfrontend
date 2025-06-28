@@ -23,13 +23,13 @@ function App() {
   return (
     <Router>
       <AuthProvider>
-        <div className="min-h-screen bg-gradient-to-r from-blue-50 to-blue-100 p-4">
-          <div className="max-w-4xl mx-auto">
-            <h1 className="text-3xl font-extrabold text-center mb-6 text-blue-800">
+        <div className="min-h-screen bg-gradient-to-r from-blue-50 to-blue-100 p-2 sm:p-4">
+          <div className="max-w-7xl mx-auto">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-center mb-4 sm:mb-6 text-blue-800">
               Sistema de Huellas de Calzado
             </h1>
             <Navigation />
-            <div className="bg-white p-6 rounded-2xl shadow-md">
+            <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-md">
               <AnimatedRoutes />
             </div>
           </div>
@@ -51,7 +51,7 @@ const Navigation = () => {
   }
 
   return (
-    <nav className="flex justify-center flex-wrap gap-2 mb-6 bg-white rounded-2xl shadow-lg p-4">
+    <nav className="flex justify-center flex-wrap gap-2 mb-4 sm:mb-6 bg-white rounded-2xl shadow-lg p-3 sm:p-4">
       {isAuthenticated && (
         <>
           {[
@@ -66,21 +66,21 @@ const Navigation = () => {
               to={to}
               className={({ isActive }) =>
                 isActive
-                  ? "bg-blue-600 text-white px-4 py-2 rounded-lg shadow"
-                  : "text-blue-700 hover:bg-blue-100 px-4 py-2 rounded-lg transition"
+                  ? "bg-blue-600 text-white px-3 sm:px-4 py-2 rounded-lg shadow text-sm"
+                  : "text-blue-700 hover:bg-blue-100 px-3 sm:px-4 py-2 rounded-lg transition text-sm"
               }
             >
               {label}
             </NavLink>
           ))}
           {user?.role && (
-            <span className="text-sm text-gray-500 px-2 self-center">
+            <span className="text-xs sm:text-sm text-gray-500 px-2 self-center">
               ({user.role})
             </span>
           )}
           <button
             onClick={() => navigate("/login?logout=true")}
-            className="text-blue-600 hover:bg-blue-100 px-4 py-2 rounded-lg transition"
+            className="text-blue-600 hover:bg-blue-100 px-3 sm:px-4 py-2 rounded-lg transition text-sm"
           >
             Cerrar Sesión
           </button>

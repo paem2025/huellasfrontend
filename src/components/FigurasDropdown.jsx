@@ -5,6 +5,8 @@ const FigurasDropdown = ({ title = "Seleccionar opciones", options = [], selecte
   const [searchTerm, setSearchTerm] = useState("");
   const dropdownRef = useRef(null);
 
+  const safeSelectedOptions = Array.isArray(selectedOptions) ? selectedOptions : [];
+
   const toggleDropdown = () => {
     setIsOpen(prev => !prev);
   };
@@ -15,10 +17,10 @@ const FigurasDropdown = ({ title = "Seleccionar opciones", options = [], selecte
 
   const handleOptionChange = (value) => {
     if (multiple) {
-      if (selectedOptions.includes(value)) {
-        onChange(selectedOptions.filter(opt => opt !== value));
+      if (safeSelectedOptions.includes(value)) {
+        onChange(safeSelectedOptions.filter(opt => opt !== value));
       } else {
-        onChange([...selectedOptions, value]);
+        onChange([...safeSelectedOptions, value]);
       }
     } else {
       onChange([value]);
@@ -40,34 +42,34 @@ const FigurasDropdown = ({ title = "Seleccionar opciones", options = [], selecte
   const filteredOptions = options.filter(opt => opt.toLowerCase().includes(searchTerm));
 
   return (
-    <div className="dropdown-container mb-4" ref={dropdownRef}>
-      <label className="block text-sm font-semibold mb-1 capitalize">{title}</label>
+    <div className="dropdown-container" ref={dropdownRef}>
+      <label className="block text-xs font-semibold mb-1 capitalize">{title}</label>
       <div
-        className="dropdown-toggle border rounded-md p-2 bg-white shadow cursor-pointer"
+        className="dropdown-toggle border rounded-md p-1 bg-white shadow cursor-pointer"
         onClick={toggleDropdown}
       >
-        <span className="truncate">
-            {selectedOptions.length > 0
-                ? selectedOptions.join(", ")
+        <span className="truncate text-sm">
+            {safeSelectedOptions.length > 0
+                ? safeSelectedOptions.join(", ")
                 : "Seleccionar opciones"}
         </span>
-        <span className="float-right">▼</span>
+        <span className="float-right text-xs">▼</span>
       </div>
 
       {isOpen && (
-        <div className="dropdown-menu border rounded-md shadow bg-white mt-1 p-2 max-h-60 overflow-y-auto">
+        <div className="dropdown-menu border rounded-md shadow bg-white mt-1 p-2 max-h-40 overflow-y-auto">
           <input
             type="text"
             placeholder="Buscar..."
             value={searchTerm}
             onChange={handleSearch}
-            className="w-full mb-2 p-1 border-b outline-none"
+            className="w-full mb-1 p-1 border-b outline-none text-sm"
           />
           {filteredOptions.map(option => (
-            <label key={option} className="flex items-center p-1 cursor-pointer hover:bg-gray-100">
+            <label key={option} className="flex items-center p-1 cursor-pointer hover:bg-gray-100 text-sm">
               <input
                 type="checkbox"
-                checked={selectedOptions.includes(option)}
+                checked={safeSelectedOptions.includes(option)}
                 onChange={() => handleOptionChange(option)}
                 className="mr-2"
               />

@@ -2,7 +2,8 @@ import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { FiEdit, FiTrash2, FiEye } from "react-icons/fi";
 import axios from "axios";
-import FigurasDropdown from "../components/FigurasDropdown";
+import EditCalzadoModal from "../components/EditCalzadoModal";
+import SuelaModal from "../components/SuelaModal";
 import { API_URLS } from "../config/api";
 
 const ListadoCalzados = () => {
@@ -21,6 +22,10 @@ const ListadoCalzados = () => {
     tipo_registro: "",
   });
 
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+
   const [suelaData, setSuelaData] = useState(null);
   const [editSuela, setEditSuela] = useState("");
   const [marcas, setMarcas] = useState([]);
@@ -28,7 +33,6 @@ const ListadoCalzados = () => {
   const [categorias, setCategorias] = useState([]);
   const [colores, setColores] = useState([]);
 
-  // Fetch de datos relacionados
   const fetchMarcas = async () => {
     try {
       const response = await axios.get(API_URLS.MARCAS);
@@ -131,7 +135,6 @@ const ListadoCalzados = () => {
         colores: coloresNombres,
         categoria,
         tipo: item.tipo_registro,
-        // Guardar IDs para edición
         id_marca: item.id_marca,
         id_modelo: item.id_modelo,
         id_categoria: item.id_categoria,
@@ -151,16 +154,14 @@ const ListadoCalzados = () => {
   }, [filter, marcas, modelos, categorias, colores]);
 
   const handleEditCalzadoChange = (e) => {
-  if (e.target.name === "id_colores") {
-    const options = Array.from(e.target.selectedOptions);
-    const values = options.map((option) => parseInt(option.value));
-    setEditCalzado({ ...editCalzado, [e.target.name]: values });
-  } else if (e.target.name === "alto" || e.target.name === "ancho") {
-    setEditCalzado({ ...editCalzado, [e.target.name]: parseFloat(e.target.value) || null });
-  } else {
-    setEditCalzado({ ...editCalzado, [e.target.name]: e.target.value });
-  }
-};
+    if (e.target.name === "id_colores") {
+      setEditCalzado({ ...editCalzado, [e.target.name]: e.target.value });
+    } else if (e.target.name === "alto" || e.target.name === "ancho") {
+      setEditCalzado({ ...editCalzado, [e.target.name]: parseFloat(e.target.value) || null });
+    } else {
+      setEditCalzado({ ...editCalzado, [e.target.name]: e.target.value });
+    }
+  };
 
   const handleEditClick = (calzado) => {
     setEditId(calzado.id);
@@ -275,6 +276,33 @@ const ListadoCalzados = () => {
     );
   });
 
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = filteredData.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.max(1, Math.ceil(filteredData.length / itemsPerPage));
+
+  useEffect(() => {
+    if (currentPage > totalPages && totalPages > 0) {
+      setCurrentPage(totalPages);
+    }
+  }, [totalPages, currentPage]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filter, searchTerm]);
+
+  const handlePreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
   return (
     <div className="container mx-auto p-4">
       <motion.div
@@ -385,7 +413,7 @@ const ListadoCalzados = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {filteredData.map((calzado) => (
+              {currentItems.map((calzado) => (
                 <tr key={calzado.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 text-sm font-medium text-gray-900 capitalize">
                     {calzado.marca}
@@ -443,175 +471,67 @@ const ListadoCalzados = () => {
           </table>
         </div>
 
-        {/* Modal editar calzado */}
-        {editId && (
-          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-            <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
-              <h2 className="text-xl font-semibold mb-4">Editar Calzado</h2>
-              <div className="grid grid-cols-1 gap-4">
-                
-                {/* Marca - Reemplazado con FigurasDropdown */}
-                <FigurasDropdown
-                  title="Marca"
-                  options={marcas.map(m => m.nombre)}
-                  selectedOptions={editCalzado.id_marca ? [marcas.find(m => m.id_marca === editCalzado.id_marca)?.nombre || ""] : []}
-                  onChange={(selected) => {
-                    const selectedMarca = marcas.find(m => m.nombre === selected[0]);
-                    setEditCalzado({...editCalzado, id_marca: selectedMarca?.id_marca || null});
-                  }}
-                  multiple={false}
-                  required
-                />
-
-                {/* Modelo - Reemplazado con FigurasDropdown */}
-                <FigurasDropdown
-                  title="Modelo"
-                  options={modelos.map(m => m.nombre)}
-                  selectedOptions={editCalzado.id_modelo ? [modelos.find(m => m.id_modelo === editCalzado.id_modelo)?.nombre || ""] : []}
-                  onChange={(selected) => {
-                    const selectedModelo = modelos.find(m => m.nombre === selected[0]);
-                    setEditCalzado({...editCalzado, id_modelo: selectedModelo?.id_modelo || null});
-                  }}
-                  multiple={false}
-                  required
-                />
-
-                {/* Categoría - Reemplazado con FigurasDropdown */}
-                <FigurasDropdown
-                  title="Categoría"
-                  options={categorias.map(c => c.nombre)}
-                  selectedOptions={editCalzado.id_categoria ? [categorias.find(c => c.id_categoria === editCalzado.id_categoria)?.nombre || ""] : []}
-                  onChange={(selected) => {
-                    const selectedCategoria = categorias.find(c => c.nombre === selected[0]);
-                    setEditCalzado({...editCalzado, id_categoria: selectedCategoria?.id_categoria || null});
-                  }}
-                  multiple={false}
-                  required
-                />
-
-                {/* Colores - Reemplazado con FigurasDropdown (multiple) */}
-                <FigurasDropdown
-                  title="Colores"
-                  options={colores.map(c => c.nombre)}
-                  selectedOptions={editCalzado.id_colores.map(id => colores.find(c => c.id_color === id)?.nombre).filter(Boolean)}
-                  onChange={(selected) => {
-                    const selectedIds = selected.map(name => 
-                      colores.find(c => c.nombre === name)?.id_color
-                    ).filter(Boolean);
-                    setEditCalzado({...editCalzado, id_colores: selectedIds});
-                  }}
-                  multiple={true}
-                  required
-                />
-
-                {/* Tipo de Registro - Reemplazado con FigurasDropdown */}
-                <FigurasDropdown
-                  title="Tipo de Registro"
-                  options={["dubitada", "indubitada_proveedor", "indubitada_comisaria"]}
-                  selectedOptions={editCalzado.tipo_registro ? [editCalzado.tipo_registro] : []}
-                  onChange={(selected) => {
-                    setEditCalzado({...editCalzado, tipo_registro: selected[0] || null});
-                  }}
-                  multiple={false}
-                  required
-                />
-
-                {/* Los inputs numéricos y botones se mantienen igual */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Alto (cm)
-                    </label>
-                    <input
-                      type="number"
-                      name="alto"
-                      value={editCalzado.alto}
-                      onChange={handleEditCalzadoChange}
-                      className="border rounded p-2 w-full"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Ancho (cm)
-                    </label>
-                    <input
-                      type="number"
-                      name="ancho"
-                      value={editCalzado.ancho}
-                      onChange={handleEditCalzadoChange}
-                      className="border rounded p-2 w-full"
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Talle
-                  </label>
-                  <input
-                    type="text"
-                    name="talle"
-                    value={editCalzado.talle}
-                    onChange={handleEditCalzadoChange}
-                    className="border rounded p-2 w-full"
-                    required
-                  />
-                </div>
-
-                <div className="flex justify-end space-x-2 mt-4">
-                  <button
-                    onClick={handleSaveEdit}
-                    className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
-                  >
-                    Guardar
-                  </button>
-                  <button
-                    onClick={handleCancelEdit}
-                    className="bg-gray-400 text-white px-4 py-2 rounded-lg hover:bg-gray-500"
-                  >
-                    Cancelar
-                  </button>
-                </div>
-              </div>
+        {filteredData.length > 0 && (
+          <div className="mt-4 flex justify-center items-center gap-4">
+            <div className="flex items-center gap-2">
+              <label className="text-sm text-gray-700">Mostrar:</label>
+              <select
+                value={itemsPerPage}
+                onChange={(e) => {
+                  setItemsPerPage(parseInt(e.target.value));
+                  setCurrentPage(1);
+                }}
+                className="border rounded px-2 py-1 text-sm"
+              >
+                <option value={5}>5</option>
+                <option value={10}>10</option>
+                <option value={20}>20</option>
+                <option value={50}>50</option>
+              </select>
+              <span className="text-sm text-gray-700">por página</span>
             </div>
+            
+            <button
+              onClick={handlePreviousPage}
+              disabled={currentPage === 1}
+              className="px-3 py-1 bg-gray-200 rounded disabled:opacity-50"
+            >
+              Anterior
+            </button>
+            
+            <span className="text-sm text-gray-700">
+              Página {currentPage} de {totalPages}
+            </span>
+            
+            <button
+              onClick={handleNextPage}
+              disabled={currentPage === totalPages}
+              className="px-3 py-1 bg-gray-200 rounded disabled:opacity-50"
+            >
+              Siguiente
+            </button>
           </div>
         )}
 
-        {/* Modal suela */}
-        {suelaData && (
-          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-            <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
-              <h2 className="text-xl font-semibold mb-4">Suela del Calzado</h2>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Descripción General
-                </label>
-                <textarea
-                  value={editSuela}
-                  onChange={(e) => setEditSuela(e.target.value)}
-                  rows={4}
-                  className="border p-2 rounded w-full"
-                />
-              </div>
-              <div className="flex justify-end space-x-2 mt-4">
-                <button
-                  onClick={guardarSuela}
-                  className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
-                >
-                  Guardar
-                </button>
-                <button
-                  onClick={() => setSuelaData(null)}
-                  className="bg-gray-400 text-white px-4 py-2 rounded-lg hover:bg-gray-500"
-                >
-                  Cancelar
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+        <EditCalzadoModal
+          editId={editId}
+          editCalzado={editCalzado}
+          marcas={marcas}
+          modelos={modelos}
+          categorias={categorias}
+          colores={colores}
+          onEditCalzadoChange={handleEditCalzadoChange}
+          onSaveEdit={handleSaveEdit}
+          onCancelEdit={handleCancelEdit}
+        />
+
+        <SuelaModal
+          suelaData={suelaData}
+          editSuela={editSuela}
+          setEditSuela={setEditSuela}
+          onGuardarSuela={guardarSuela}
+          onClose={() => setSuelaData(null)}
+        />
       </motion.div>
     </div>
   );
