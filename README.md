@@ -1,70 +1,48 @@
-# Getting Started with Create React App
+# Configuración de la API
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Este directorio contiene la configuración centralizada para todas las URLs de la API.
 
-## Available Scripts
+## Archivo `api.js`
 
-In the project directory, you can run:
+El archivo `api.js` contiene todas las URLs de la API en un solo lugar para facilitar el mantenimiento y la configuración.
 
-### `npm start`
+### Uso
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+```javascript
+import { API_URLS, API_BASE_URL } from '../config/api';
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+axios.get(API_URLS.FORMAS)
+axios.post(API_URLS.CALZADOS, data)
+axios.patch(API_URLS.MARCAS + id, data)
 
-### `npm test`
+const customUrl = `${API_BASE_URL}/custom-endpoint/`;
+```
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### URLs disponibles
 
-### `npm run build`
+- `API_URLS.FORMAS` - Endpoint para figuras/formas
+- `API_URLS.CALZADOS` - Endpoint para calzados
+- `API_URLS.SUELAS` - Endpoint para suelas
+- `API_URLS.MARCAS` - Endpoint para marcas
+- `API_URLS.MODELOS` - Endpoint para modelos
+- `API_URLS.CATEGORIAS` - Endpoint para categorías
+- `API_URLS.COLORES` - Endpoint para colores
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### Cambiar la URL base
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+Para cambiar la URL base de la API (por ejemplo, para producción), solo necesitas modificar la constante `API_BASE_URL` en el archivo `api.js`:
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+```javascript
+// Para desarrollo local
+const API_BASE_URL = "http://127.0.0.1:5000";
 
-### `npm run eject`
+// Para producción
+const API_BASE_URL = "https://tu-api-produccion.com";
+```
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+### Ventajas
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+1. **Mantenimiento centralizado**: Todas las URLs están en un solo lugar
+2. **Fácil configuración**: Cambiar entre entornos es simple
+3. **Consistencia**: Todas las partes de la aplicación usan las mismas URLs
+4. **Menos errores**: No hay URLs hardcodeadas dispersas en el código 
