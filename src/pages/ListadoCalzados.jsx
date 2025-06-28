@@ -3,13 +3,7 @@ import { motion } from "framer-motion";
 import { FiEdit, FiTrash2, FiEye } from "react-icons/fi";
 import axios from "axios";
 import FigurasDropdown from "../components/FigurasDropdown";
-
-const API_URL_CALZADOS = "http://localhost:5000/calzados/";
-const API_URL_SUELAS = "http://localhost:5000/suelas/";
-const API_URL_MARCAS = "http://localhost:5000/marcas/";
-const API_URL_MODELOS = "http://localhost:5000/modelos/";
-const API_URL_CATEGORIAS = "http://localhost:5000/categorias/";
-const API_URL_COLORES = "http://localhost:5000/colores/";
+import { API_URLS } from "../config/api";
 
 const ListadoCalzados = () => {
   const [filter, setFilter] = useState("all");
@@ -37,7 +31,7 @@ const ListadoCalzados = () => {
   // Fetch de datos relacionados
   const fetchMarcas = async () => {
     try {
-      const response = await axios.get(API_URL_MARCAS);
+      const response = await axios.get(API_URLS.MARCAS);
       setMarcas(response.data);
     } catch (error) {
       console.error("Error al obtener marcas:", error);
@@ -46,7 +40,7 @@ const ListadoCalzados = () => {
 
   const fetchModelos = async () => {
     try {
-      const response = await axios.get(API_URL_MODELOS);
+      const response = await axios.get(API_URLS.MODELOS);
       setModelos(response.data);
     } catch (error) {
       console.error("Error al obtener modelos:", error);
@@ -55,7 +49,7 @@ const ListadoCalzados = () => {
 
   const fetchCategorias = async () => {
     try {
-      const response = await axios.get(API_URL_CATEGORIAS);
+      const response = await axios.get(API_URLS.CATEGORIAS);
       setCategorias(response.data);
     } catch (error) {
       console.error("Error al obtener categorías:", error);
@@ -64,7 +58,7 @@ const ListadoCalzados = () => {
 
   const fetchColores = async () => {
     try {
-      const response = await axios.get(API_URL_COLORES);
+      const response = await axios.get(API_URLS.COLORES);
       setColores(response.data);
     } catch (error) {
       console.error("Error al obtener colores:", error);
@@ -80,16 +74,16 @@ const ListadoCalzados = () => {
 
   const fetchCalzados = async () => {
   try {
-    let endpoint = API_URL_CALZADOS; 
+    let endpoint = API_URLS.CALZADOS; 
     let calzadosData;
 
     if (filter === "dubitada") {
-      endpoint = `${API_URL_CALZADOS}getAllDubitadas`;
+      endpoint = `${API_URLS.CALZADOS}getAllDubitadas`;
       const response = await axios.get(endpoint);
       calzadosData = response.data;
     } 
     else if (filter === "indubitada_proveedor" || filter === "indubitada_comisaria") {
-      const response = await axios.get(API_URL_CALZADOS);
+      const response = await axios.get(API_URLS.CALZADOS);
       calzadosData = response.data.filter(item => 
         item.tipo_registro === filter
       );
@@ -203,7 +197,7 @@ const ListadoCalzados = () => {
       console.log("Datos a enviar:", dataToSend); 
 
       const response = await axios.patch(
-        `${API_URL_CALZADOS}${editId}`,
+        `${API_URLS.CALZADOS}${editId}`,
         dataToSend,
         {
           headers: {
@@ -236,7 +230,7 @@ const ListadoCalzados = () => {
     }
 
     try {
-      await axios.delete(`${API_URL_CALZADOS}${idCalzado}`);
+      await axios.delete(`${API_URLS.CALZADOS}${idCalzado}`);
       alert("Calzado eliminado exitosamente");
       fetchCalzados();
     } catch (error) {
@@ -247,7 +241,7 @@ const ListadoCalzados = () => {
 
   const fetchSuelaPorCalzado = async (idCalzado) => {
     try {
-      const response = await axios.get(API_URL_SUELAS);
+      const response = await axios.get(API_URLS.SUELAS);
       const suela = response.data.find((s) => s.id_calzado === idCalzado);
 
       if (suela) {
@@ -264,7 +258,7 @@ const ListadoCalzados = () => {
   const guardarSuela = async () => {
     try {
       const patchData = { descripcion_general: editSuela };
-      await axios.patch(`${API_URL_SUELAS}${suelaData.id_suela}/partial`, patchData);
+      await axios.patch(`${API_URLS.SUELAS}${suelaData.id_suela}/partial`, patchData);
       alert("Descripción de suela actualizada correctamente.");
       setSuelaData(null);
     } catch (err) {
