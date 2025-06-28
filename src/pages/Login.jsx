@@ -5,11 +5,19 @@ import { useAuth } from "../context/AuthContext";
 import { FaSignInAlt } from "react-icons/fa";
 
 const Login = () => {
-  const { login, logout } = useAuth();
+  const { login, logout, isAuthenticated, user } = useAuth();
   const [formData, setFormData] = useState({ username: "", password: "" });
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Redirigir si ya está autenticado
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      navigate("/indubitadas", { replace: true });
+    }
+  }, [isAuthenticated, user, navigate]);
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -22,24 +30,26 @@ const Login = () => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
+    setLoading(true);
+
     const { username, password } = formData;
 
     try {
-      const users = JSON.parse(localStorage.getItem("users")) || [];
-      const found = users.find(
-        (u) => u.username === username && u.password === password
-      );
-      if (found) {
-        login(found);
+      const result = await login(username, password);
+      
+      if (result.success) {
         navigate("/indubitadas", { replace: true });
       } else {
-        setError("Usuario o contraseña incorrectos");
+        setError(result.message);
       }
-    } catch (e) {
-      console.error("Error al iniciar sesión:", e);
-      setError("Error al acceder a los datos");
+    } catch (error) {
+      console.error("Error al iniciar sesión:", error);
+      setError("Error interno del sistema");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -56,6 +66,7 @@ const Login = () => {
           Iniciar Sesión
         </h2>
         {error && <div className="text-red-500 text-center mb-4">{error}</div>}
+        
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-semibold mb-1">Usuario:</label>
@@ -66,7 +77,8 @@ const Login = () => {
               onChange={handleChange}
               placeholder="Nombre de usuario"
               required
-              className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+              disabled={loading}
+              className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 transition disabled:opacity-50"
             />
           </div>
           <div>
@@ -78,14 +90,16 @@ const Login = () => {
               onChange={handleChange}
               placeholder="Contraseña"
               required
-              className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+              disabled={loading}
+              className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 transition disabled:opacity-50"
             />
           </div>
           <button
             type="submit"
-            className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white py-3 rounded-lg font-semibold hover:from-blue-700 hover:to-blue-800 transition duration-300 shadow-md"
+            disabled={loading}
+            className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white py-3 rounded-lg font-semibold hover:from-blue-700 hover:to-blue-800 transition duration-300 shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Entrar
+            {loading ? "Iniciando sesión..." : "Entrar"}
           </button>
         </form>
         <p className="text-sm text-center mt-4">

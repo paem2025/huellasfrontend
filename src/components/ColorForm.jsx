@@ -2,40 +2,44 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { API_URLS } from "../config/api";
 
-const FiguraForm = ({ onClose, onUpdateFiguras }) => {
-  const [figura, setFigura] = useState("");
-  const [figuras, setFiguras] = useState([]);
+const ColorForm = ({ onClose, onUpdateColores }) => {
+  const [color, setColor] = useState("");
+  const [colores, setColores] = useState([]);
   const [editId, setEditId] = useState(null);
   const [editNombre, setEditNombre] = useState("");
 
   const handleChange = (e) => {
-    setFigura(e.target.value);
+    setColor(e.target.value);
   };
 
-  const fetchFiguras = () => {
+  const fetchColores = () => {
     axios
-      .get(API_URLS.FORMAS)
-      .then((res) => setFiguras(res.data))
-      .catch((error) => console.error("Error al obtener figuras:", error));
+      .get(API_URLS.COLORES)
+      .then((res) => {
+        setColores(res.data);
+      })
+      .catch((error) => {
+        console.error("Error al obtener colores:", error);
+      });
   };
 
   useEffect(() => {
-    fetchFiguras();
+    fetchColores();
   }, []);
 
   const handleSubmit = (e) => {
     e.preventDefault();
 
     axios
-      .post(API_URLS.FORMAS, { nombre: figura })
+      .post(API_URLS.COLORES, { nombre: color })
       .then(() => {
-        alert("Figura cargada correctamente");
-        setFigura("");
-        fetchFiguras();
-        if (onUpdateFiguras) onUpdateFiguras();
+        alert("Color cargado correctamente");
+        setColor("");
+        fetchColores();
+        onUpdateColores();
       })
       .catch(() => {
-        alert("Error al cargar figura");
+        alert("Error al cargar color");
       });
   };
 
@@ -45,20 +49,20 @@ const FiguraForm = ({ onClose, onUpdateFiguras }) => {
   };
 
   const handleSaveEdit = () => {
-    if (!window.confirm("¿Estás seguro de que deseas editar esta figura?")) {
+    if (!window.confirm("¿Estás seguro de que deseas editar este color?")) {
       return;
     }
     axios
-      .patch(`${API_URLS.FORMAS}${editId}`, { nombre: editNombre })
+      .patch(`${API_URLS.COLORES}${editId}`, { nombre: editNombre })
       .then(() => {
-        alert("Figura editada correctamente");
+        alert("Color editado correctamente");
         setEditId(null);
         setEditNombre("");
-        fetchFiguras();
-        if (onUpdateFiguras) onUpdateFiguras();
+        fetchColores();
+        onUpdateColores();
       })
       .catch(() => {
-        alert("Error al editar figura");
+        alert("Error al editar color");
       });
   };
 
@@ -68,18 +72,18 @@ const FiguraForm = ({ onClose, onUpdateFiguras }) => {
   };
 
   const handleDelete = (id) => {
-    if (!window.confirm("¿Estás seguro de que deseas eliminar esta figura?")) {
+    if (!window.confirm("¿Estás seguro de que deseas eliminar este color?")) {
       return;
     }
     axios
-      .delete(`${API_URLS.FORMAS}${id}`)
+      .delete(`${API_URLS.COLORES}${id}`)
       .then(() => {
-        alert("Figura eliminada correctamente");
-        fetchFiguras();
-        if (onUpdateFiguras) onUpdateFiguras();
+        alert("Color eliminado correctamente");
+        fetchColores();
+        onUpdateColores();
       })
       .catch(() => {
-        alert("Error al eliminar figura");
+        alert("Error al eliminar color");
       });
   };
 
@@ -89,13 +93,13 @@ const FiguraForm = ({ onClose, onUpdateFiguras }) => {
         onSubmit={handleSubmit}
         className="bg-white p-8 rounded-2xl shadow-xl max-w-lg mx-auto space-y-4"
       >
-        <label className="block text-sm font-semibold mb-1">Figura:</label>
+        <label className="block text-sm font-semibold mb-1">Color:</label>
 
         <input
           type="text"
-          value={figura}
+          value={color}
           onChange={handleChange}
-          placeholder="Ingrese figura"
+          placeholder="Ingrese color"
           className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
           required
         />
@@ -112,7 +116,7 @@ const FiguraForm = ({ onClose, onUpdateFiguras }) => {
             <button
               type="button"
               onClick={() => {
-                if (onUpdateFiguras) onUpdateFiguras();
+                onUpdateColores();
                 onClose();
               }}
               className="bg-gray-400 text-white px-4 py-2 rounded-lg hover:bg-gray-500 transition font-semibold"
@@ -124,18 +128,18 @@ const FiguraForm = ({ onClose, onUpdateFiguras }) => {
       </form>
 
       <div className="bg-white p-8 rounded-2xl shadow-xl max-w-lg mx-auto mt-6">
-        <h2 className="text-sm font-semibold mb-4">Figuras cargadas:</h2>
+        <h2 className="text-sm font-semibold mb-4">Colores cargados:</h2>
 
-        {figuras.length === 0 && <p>No hay figuras cargadas</p>}
+        {colores.length === 0 && <p>No hay colores cargados</p>}
 
-        {figuras.length > 0 && (
+        {colores.length > 0 && (
           <ul className="list-disc list-inside">
-            {figuras.map((f) => (
+            {colores.map((c) => (
               <li
-                key={f.id_forma}
+                key={c.id_color}
                 className="flex items-center justify-between py-1 border-b last:border-b-0"
               >
-                {editId === f.id_forma ? (
+                {editId === c.id_color ? (
                   <>
                     <input
                       type="text"
@@ -162,17 +166,17 @@ const FiguraForm = ({ onClose, onUpdateFiguras }) => {
                   </>
                 ) : (
                   <>
-                    <span>{f.nombre}</span>
+                    <span>{c.nombre}</span>
                     <div className="space-x-2">
                       <button
-                        onClick={() => handleEditClick(f.id_forma, f.nombre)}
+                        onClick={() => handleEditClick(c.id_color, c.nombre)}
                         className="bg-blue-600 text-white text-sm px-2 py-0.5 rounded hover:bg-blue-700"
                         type="button"
                       >
                         Editar
                       </button>
                       <button
-                        onClick={() => handleDelete(f.id_forma)}
+                        onClick={() => handleDelete(c.id_color)}
                         className="bg-red-600 text-white text-sm px-2 py-0.5 rounded hover:bg-red-700"
                         type="button"
                       >
@@ -190,4 +194,4 @@ const FiguraForm = ({ onClose, onUpdateFiguras }) => {
   );
 };
 
-export default FiguraForm;
+export default ColorForm;

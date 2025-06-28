@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 
-const FigurasDropdown = ({ title = "Seleccionar opciones", options = [], selectedOptions = [], onChange }) => {
+const FigurasDropdown = ({ title = "Seleccionar opciones", options = [], selectedOptions = [], onChange, multiple = true}) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const dropdownRef = useRef(null);
@@ -14,10 +14,15 @@ const FigurasDropdown = ({ title = "Seleccionar opciones", options = [], selecte
   };
 
   const handleOptionChange = (value) => {
-    if (selectedOptions.includes(value)) {
-      onChange(selectedOptions.filter(opt => opt !== value));
+    if (multiple) {
+      if (selectedOptions.includes(value)) {
+        onChange(selectedOptions.filter(opt => opt !== value));
+      } else {
+        onChange([...selectedOptions, value]);
+      }
     } else {
-      onChange([...selectedOptions, value]);
+      onChange([value]);
+      setIsOpen(false);
     }
   };
 
