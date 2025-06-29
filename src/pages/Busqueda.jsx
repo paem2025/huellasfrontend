@@ -11,73 +11,124 @@ const Busqueda = () => {
     marca: "",
     modelo: "",
     talle: "",
+    // Mantenemos los estados de figuras por si el backend las implementa en el futuro
     figurasSuperiorIzquierdo: [],
     figurasSuperiorDerecho: [],
     figurasCentral: [],
-    figurasInferiorDerecho: [],
     figurasInferiorIzquierdo: [],
+    figurasInferiorDerecho: [],
   });
 
   const [mostrarFiguraForm, setMostrarFiguraForm] = useState(false);
-
   const [results, setResults] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [figuras, setFiguras] = useState([]);
+  const [allCalzados, setAllCalzados] = useState([]);
+
+  // Obtener todos los calzados al montar el componente
+  useEffect(() => {
+    const fetchInitialData = async () => {
+      try {
+        setIsLoading(true);
+        const [figurasResponse, calzadosResponse] = await Promise.all([
+          axios.get(API_URLS.FORMAS),
+          axios.get(API_URLS.CALZADOS)
+        ]);
+        
+        setFiguras(figurasResponse.data.map(f => f.nombre));
+        setAllCalzados(calzadosResponse.data);
+      } catch (err) {
+        console.error("Error al obtener datos iniciales:", err);
+        setError("Error al cargar los datos iniciales");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchInitialData();
+  }, []);
 
   const handleChange = (e) => {
     setSearchCriteria({ ...searchCriteria, [e.target.name]: e.target.value });
   };
 
-  const handleSearch = (e) => {
+  const handleSearch = async (e) => {
     e.preventDefault();
-    console.log("Criterios de búsqueda:", searchCriteria);
-    
-    // Simulando resultados de búsqueda
-    setResults([
-      {
-        id: 1,
-        categoria: "Deportivo",
-        marca: "Nike",
-        modelo: "Air Max",
-        talle: "42",
-        figurasSuperiorIzquierdo: ["Círculo", "Triángulo"],
-        figurasSuperiorDerecho: [],
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      // Primero intentamos usar el endpoint de búsqueda si existe
+      try {
+        const params = new URLSearchParams();
+        if (searchCriteria.categoria) params.append('categoria', searchCriteria.categoria);
+        if (searchCriteria.marca) params.append('marca', searchCriteria.marca);
+        if (searchCriteria.modelo) params.append('modelo', searchCriteria.modelo);
+        if (searchCriteria.talle) params.append('talle', searchCriteria.talle);
+
+        const response = await axios.get(`${API_URLS.CALZADOS}/buscar?${params.toString()}`);
+        setResults(response.data);
+        return;
+      } catch (apiError) {
+        console.log("Endpoint de búsqueda no disponible, filtrando localmente");
+      }
+
+      // Si el endpoint de búsqueda no funciona, filtramos localmente
+      const resultadosFiltrados = allCalzados.filter(calzado => {
+        // Filtro por categoría
+        if (searchCriteria.categoria && calzado.categoria !== searchCriteria.categoria) {
+          return false;
+        }
+        
+        // Filtro por marca
+        if (searchCriteria.marca && calzado.marca?.toLowerCase() !== searchCriteria.marca.toLowerCase()) {
+          return false;
+        }
+        
+        // Filtro por modelo
+        if (searchCriteria.modelo && calzado.modelo?.toLowerCase() !== searchCriteria.modelo.toLowerCase()) {
+          return false;
+        }
+        
+        // Filtro por talle
+        if (searchCriteria.talle && calzado.talle !== searchCriteria.talle) {
+          return false;
+        }
+
+        return true;
+      });
+
+      // Mock de figuras para demostración (eliminar cuando el backend lo soporte)
+      const resultadosConFiguras = resultadosFiltrados.map((calzado, index) => ({
+        ...calzado,
+        figurasSuperiorIzquierdo: index % 2 === 0 ? ["Círculo"] : [],
+        figurasSuperiorDerecho: index % 3 === 0 ? ["Triángulo"] : [],
         figurasCentral: [],
         figurasInferiorIzquierdo: [],
-        figurasInferiorDerecho: [],
-      },
-      {
-        id: 2,
-        categoria: "Urbano",
-        marca: "Adidas",
-        modelo: "Superstar",
-        talle: "40",
-        figurasSuperiorIzquierdo: [],
-        figurasSuperiorDerecho: ["Triangulo"],
-        figurasCentral: [],
-        figurasInferiorIzquierdo: [],
-        figurasInferiorDerecho: ["Rectángulo", "Cuadrado"],
-      },
-    ]);
+        figurasInferiorDerecho: index % 4 === 0 ? ["Rectángulo"] : [],
+      }));
+
+      setResults(resultadosConFiguras);
+
+    } catch (error) {
+      console.error("Error en la búsqueda:", error);
+      setError("Error al realizar la búsqueda");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  //Estado para figuras
-  const [figuras, setFiguras] = useState([]);
-
   const fetchFiguras = () => {
-    axios
-      .get(API_URLS.FORMAS)
+    axios.get(API_URLS.FORMAS)
       .then((response) => {
-        const nombresFiguras = response.data.map(f => f.nombre);
-        setFiguras(nombresFiguras);
+        setFiguras(response.data.map(f => f.nombre));
       })
       .catch((error) => {
         console.error("Error al obtener figuras:", error);
       });
   };
-  useEffect(() => {
-    fetchFiguras();
-  }, []);
 
-  //Reemplazar formulario Busqueda por FiguraForm si mostrarFiguraForm es igual a true
   if (mostrarFiguraForm) {
     return (
       <motion.div
@@ -86,10 +137,10 @@ const Busqueda = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
       >
-          <FiguraForm 
-            onClose={() => setMostrarFiguraForm(false)} 
-            onUpdateFiguras={fetchFiguras}
-          />
+        <FiguraForm 
+          onClose={() => setMostrarFiguraForm(false)} 
+          onUpdateFiguras={fetchFiguras}
+        />
       </motion.div>
     );
   }
@@ -99,6 +150,13 @@ const Busqueda = () => {
       <h2 className="text-2xl font-bold text-blue-700 text-center mb-6">
         Búsqueda de Huellas
       </h2>
+      
+      {error && (
+        <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg">
+          {error}
+        </div>
+      )}
+
       <form onSubmit={handleSearch} className="space-y-4">
         <div>
           <label className="block text-sm font-semibold mb-1">Categoría:</label>
@@ -110,6 +168,8 @@ const Busqueda = () => {
           >
             <option value="">Seleccionar categoría</option>
             <option value="Deportivo">Deportivo</option>
+            <option value="Deportivo">Casual</option>
+            <option value="Deportivo">formal</option>
             <option value="Urbano">Urbano</option>
             <option value="Trabajo">Trabajo</option>
           </select>
@@ -134,43 +194,21 @@ const Busqueda = () => {
         <div>
           <label className="block text-sm font-semibold mb-3">Figuras por Cuadrante:</label>
 
-          <FigurasDropdown
-            title="Cuadrante Superior Izquierdo"
-            options={figuras}
-            selectedOptions={searchCriteria.figurasSuperiorIzquierdo}
-            onChange={(selectedFigures) => setSearchCriteria((prev) => ({...prev, figurasSuperiorIzquierdo: selectedFigures,}))}
-          />
+          {["SuperiorIzquierdo", "SuperiorDerecho", "Central", "InferiorIzquierdo", "InferiorDerecho"].map((cuadrante) => (
+            <FigurasDropdown
+              key={cuadrante}
+              title={`Cuadrante ${cuadrante.replace(/([A-Z])/g, ' $1').trim()}`}
+              options={figuras}
+              selectedOptions={searchCriteria[`figuras${cuadrante}`]}
+              onChange={(selectedFigures) => 
+                setSearchCriteria(prev => ({
+                  ...prev, 
+                  [`figuras${cuadrante}`]: selectedFigures
+                }))
+              }
+            />
+          ))}
 
-          <FigurasDropdown
-            title="Cuadrante Superior Derecho"
-            options={figuras}
-            selectedOptions={searchCriteria.figurasSuperiorDerecho}
-            onChange={(selectedFigures) => setSearchCriteria((prev) => ({...prev, figurasSuperiorDerecho: selectedFigures,}))}
-          />
-
-          <FigurasDropdown
-            title="Cuadrante Central"
-            options={figuras}
-            selectedOptions={searchCriteria.figurasCentral}
-            onChange={(selectedFigures) =>
-              setSearchCriteria((prev) => ({...prev,figurasCentral: selectedFigures,}))}
-          />
-
-          <FigurasDropdown
-            title="Cuadrante Inferior Izquierdo"
-            options={figuras}
-            selectedOptions={searchCriteria.figurasInferiorIzquierdo}
-            onChange={(selectedFigures) => setSearchCriteria((prev) => ({...prev, figurasInferiorIzquierdo: selectedFigures,}))}
-          />
-
-          <FigurasDropdown
-            title="Cuadrante Inferior Derecho"
-            options={figuras}
-            selectedOptions={searchCriteria.figurasInferiorDerecho}
-            onChange={(selectedFigures) => setSearchCriteria((prev) => ({...prev, figurasInferiorDerecho: selectedFigures,}))}
-          />
-
-          {/* Botón Nueva Figura */}
           <button
             type="button"
             onClick={() => setMostrarFiguraForm(true)}
@@ -182,33 +220,53 @@ const Busqueda = () => {
 
         <button
           type="submit"
-          className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white py-3 rounded-lg font-semibold hover:from-blue-700 hover:to-blue-800 transition duration-300 shadow-md"
+          disabled={isLoading}
+          className={`w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white py-3 rounded-lg font-semibold hover:from-blue-700 hover:to-blue-800 transition duration-300 shadow-md ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
         >
-          Buscar
+          {isLoading ? 'Buscando...' : 'Buscar'}
         </button>
       </form>
 
       {/* Resultados de búsqueda */}
       <div className="mt-6">
         <h3 className="text-lg font-semibold mb-2 text-center">Resultados:</h3>
-        {results.length > 0 ? (
+        
+        {isLoading ? (
+          <div className="text-center py-4">
+            <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+          </div>
+        ) : results.length > 0 ? (
           <div className="space-y-3">
             {results.map((result) => (
-              <div key={result.id} className="bg-blue-50 p-4 rounded-lg shadow-inner text-gray-700">
-                <p><strong>Categoría:</strong> {result.categoria}</p>
-                <p><strong>Marca:</strong> {result.marca}</p>
-                <p><strong>Modelo:</strong> {result.modelo}</p>
-                <p><strong>Talle:</strong> {result.talle}</p>
-                <p><strong>Superior Izquierdo:</strong> {result.figurasSuperiorIzquierdo?.join(", ")}</p>
-                <p><strong>Superior Derecho:</strong> {result.figurasSuperiorDerecho?.join(", ")}</p>
-                <p><strong>Central:</strong> {result.figurasCentral?.join(", ")}</p>
-                <p><strong>Inferior Izquierdo:</strong> {result.figurasInferiorIzquierdo?.join(", ")}</p>
-                <p><strong>Inferior Derecho:</strong> {result.figurasInferiorDerecho?.join(", ")}</p>
+              <div key={result.id_calzado || result.id} className="bg-blue-50 p-4 rounded-lg shadow-inner text-gray-700">
+                <p><strong>Categoría:</strong> {result.categoria || 'No especificado'}</p>
+                <p><strong>Marca:</strong> {result.marca || 'No especificado'}</p>
+                <p><strong>Modelo:</strong> {result.modelo || 'No especificado'}</p>
+                <p><strong>Talle:</strong> {result.talle || 'No especificado'}</p>
+                
+                {/* Mostrar figuras solo si existen en los datos */}
+                {result.figurasSuperiorIzquierdo?.length > 0 && (
+                  <p><strong>Superior Izquierdo:</strong> {result.figurasSuperiorIzquierdo.join(", ")}</p>
+                )}
+                {result.figurasSuperiorDerecho?.length > 0 && (
+                  <p><strong>Superior Derecho:</strong> {result.figurasSuperiorDerecho.join(", ")}</p>
+                )}
+                {result.figurasCentral?.length > 0 && (
+                  <p><strong>Central:</strong> {result.figurasCentral.join(", ")}</p>
+                )}
+                {result.figurasInferiorIzquierdo?.length > 0 && (
+                  <p><strong>Inferior Izquierdo:</strong> {result.figurasInferiorIzquierdo.join(", ")}</p>
+                )}
+                {result.figurasInferiorDerecho?.length > 0 && (
+                  <p><strong>Inferior Derecho:</strong> {result.figurasInferiorDerecho.join(", ")}</p>
+                )}
               </div>
             ))}
           </div>
         ) : (
-          <p className="text-gray-600 text-center">Sin resultados (aún no implementado).</p>
+          <p className="text-gray-600 text-center py-4">
+            {error ? "Error al obtener resultados" : "No se encontraron resultados"}
+          </p>
         )}
       </div>
     </div>
