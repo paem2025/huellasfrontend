@@ -28,6 +28,9 @@ const ListadoCalzados = () => {
   const [categorias, setCategorias] = useState([]);
   const [colores, setColores] = useState([]);
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
   // Fetch de datos relacionados
   const fetchMarcas = async () => {
     try {
@@ -275,6 +278,11 @@ const ListadoCalzados = () => {
     );
   });
 
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = filteredData.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+
   return (
     <div className="container mx-auto p-4">
       <motion.div
@@ -385,7 +393,7 @@ const ListadoCalzados = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {filteredData.map((calzado) => (
+              {currentItems.map((calzado) => (
                 <tr key={calzado.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 text-sm font-medium text-gray-900 capitalize">
                     {calzado.marca}
@@ -441,12 +449,25 @@ const ListadoCalzados = () => {
               ))}
             </tbody>
           </table>
+          <div className="flex justify-center items-center space-x-2 p-4">
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((num) => (
+              <button
+                key={num}
+                onClick={() => setCurrentPage(num)}
+                className={`px-3 py-1 rounded ${
+                  currentPage === num ? "bg-purple-600 text-white" : "bg-gray-200"
+      }`}
+    >
+      {num}
+    </button>
+  ))}
+</div>
         </div>
 
         {/* Modal editar calzado */}
         {editId && (
           <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-            <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
+            <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md max-h-[90vh] overflow-y-auto">
               <h2 className="text-xl font-semibold mb-4">Editar Calzado</h2>
               <div className="grid grid-cols-1 gap-4">
                 

@@ -4,6 +4,8 @@ import FiguraForm from "../components/FiguraForm";
 import FigurasDropdown from "../components/FigurasDropdown";
 import axios from "axios";
 import { API_URLS } from "../config/api";
+import jsPDF from "jspdf";
+import "jspdf-autotable";
 
 const Busqueda = () => {
   const [searchCriteria, setSearchCriteria] = useState({
@@ -129,6 +131,52 @@ const Busqueda = () => {
       });
   };
 
+  const exportarPDF = () => {
+    if (results.length === 0) {
+      alert("No hay resultados para exportar.");
+      return;
+  }
+
+    const confirmar = window.confirm("¿Deseás descargar los resultados como PDF?");
+    if (!confirmar) return;
+
+    const nombreArchivo = window.prompt("Ingresá el nombre del archivo PDF:", "resultados_calzados");
+    const nombreFinal = nombreArchivo?.trim() ? `${nombreArchivo.trim()}.pdf` : "resultados_calzados.pdf";
+    
+    const doc = new jsPDF();
+    doc.setFontSize(16);
+    doc.text("Resultados de búsqueda de calzados", 14, 20);
+
+    const columnas = [
+      "Categoría", "Marca", "Modelo", "Talle", "Colores",
+      "Sup. Izq.", "Sup. Der.", "Central", "Inf. Izq.", "Inf. Der.",
+  ];
+
+    const filas = results.map((r) => [
+      r.categoria || "—",
+      r.marca || "—",
+      r.modelo || "—",
+      r.talle || "—",
+      Array.isArray(r.colores) ? r.colores.join(", ") : (r.colores || "—"),
+
+      r.figurasSuperiorIzquierdo?.join(", ") || "—",
+      r.figurasSuperiorDerecho?.join(", ") || "—",
+      r.figurasCentral?.join(", ") || "—",
+      r.figurasInferiorIzquierdo?.join(", ") || "—",
+      r.figurasInferiorDerecho?.join(", ") || "—",
+  ]);
+
+  doc.autoTable({
+    startY: 30,
+    head: [columnas],
+    body: filas,
+    styles: { fontSize: 9 },
+    headStyles: { fillColor: [22, 78, 99] },
+  });
+
+  doc.save(nombreFinal);
+};
+
   if (mostrarFiguraForm) {
     return (
       <motion.div
@@ -225,11 +273,24 @@ const Busqueda = () => {
         >
           {isLoading ? 'Buscando...' : 'Buscar'}
         </button>
-      </form>
+      </form>  
 
       {/* Resultados de búsqueda */}
       <div className="mt-6">
-        <h3 className="text-lg font-semibold mb-2 text-center">Resultados:</h3>
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-semibold">Resultados:</h3>
+          <button
+            onClick={exportarPDF}
+            disabled={results.length === 0}
+            className={`py-2 px-4 rounded-lg font-semibold transition
+              ${results.length === 0
+                ? "bg-green-900 cursor-not-allowed text-white" 
+                : "bg-green-600 hover:bg-green-700 text-white" 
+    }`}
+    >
+      Exportar a PDF
+    </button>
+  </div>
         
         {isLoading ? (
           <div className="text-center py-4">
