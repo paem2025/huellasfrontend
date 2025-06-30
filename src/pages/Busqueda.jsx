@@ -44,9 +44,9 @@ const Busqueda = () => {
         ]);
         
         setFiguras(figurasResponse.data.map(f => f.nombre));
-        setMarcas(marcasResponse.data);
-        setModelos(modelosResponse.data);
-        setCategorias(categoriasResponse.data);
+        setMarcas(marcasResponse.data.map(m => m.nombre));         
+        setModelos(modelosResponse.data.map(m => m.nombre));    
+        setCategorias(categoriasResponse.data.map(c => c.nombre));
         
         setAllCalzados(calzadosResponse.data);
       } catch (err) {
@@ -205,7 +205,7 @@ const Busqueda = () => {
         {/* Categoría */}
         <FigurasDropdown
           title="Categoría"
-          options={categorias.map(c => c.nombre)}
+          options={categorias}
           selectedOptions={searchCriteria.categoria ? [searchCriteria.categoria] : []}
           onChange={(selected) => setSearchCriteria(prev => ({ ...prev, categoria: selected[0] || "" }))}
           multiple={false}
@@ -214,7 +214,7 @@ const Busqueda = () => {
         {/* Marca */}
         <FigurasDropdown
           title="Marca"
-          options={marcas.map(m => m.nombre)}
+          options={marcas}
           selectedOptions={searchCriteria.marca ? [searchCriteria.marca] : []}
           onChange={(selected) => setSearchCriteria(prev => ({ ...prev, marca: selected[0] || "" }))}
           multiple={false}
@@ -223,7 +223,7 @@ const Busqueda = () => {
         {/* Modelo */}
         <FigurasDropdown
           title="Modelo"
-          options={modelos.map(m => m.nombre)}
+          options={modelos}
           selectedOptions={searchCriteria.modelo ? [searchCriteria.modelo] : []}
           onChange={(selected) => setSearchCriteria(prev => ({ ...prev, modelo: selected[0] || "" }))}
           multiple={false}
