@@ -37,7 +37,12 @@ const FigurasDropdown = ({ title = "Seleccionar opciones", options = [], selecte
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const filteredOptions = options.filter(opt => opt.toLowerCase().includes(searchTerm));
+  const normalizeText = (text) =>
+    text.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase();
+
+  const filteredOptions = options.filter(opt =>
+    normalizeText(opt).includes(normalizeText(searchTerm))
+);
 
   return (
     <div className="dropdown-container mb-4" ref={dropdownRef}>
