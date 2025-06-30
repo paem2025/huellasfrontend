@@ -21,11 +21,13 @@ const Busqueda = () => {
     figurasInferiorDerecho: [],
   });
 
-  const [mostrarFiguraForm, setMostrarFiguraForm] = useState(false);
   const [results, setResults] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [figuras, setFiguras] = useState([]);
+  const [marcas, setMarcas] = useState([]);
+  const [modelos, setModelos] = useState([]);
+  const [categorias, setCategorias] = useState([]);
   const [allCalzados, setAllCalzados] = useState([]);
 
   // Obtener todos los calzados al montar el componente
@@ -33,12 +35,19 @@ const Busqueda = () => {
     const fetchInitialData = async () => {
       try {
         setIsLoading(true);
-        const [figurasResponse, calzadosResponse] = await Promise.all([
+        const [figurasResponse, marcasResponse, modelosResponse, categoriasResponse, calzadosResponse] = await Promise.all([
           axios.get(API_URLS.FORMAS),
+          axios.get(API_URLS.MARCAS),
+          axios.get(API_URLS.MODELOS),
+          axios.get(API_URLS.CATEGORIAS),
           axios.get(API_URLS.CALZADOS)
         ]);
         
         setFiguras(figurasResponse.data.map(f => f.nombre));
+        setMarcas(marcasResponse.data);
+        setModelos(modelosResponse.data);
+        setCategorias(categoriasResponse.data);
+        
         setAllCalzados(calzadosResponse.data);
       } catch (err) {
         console.error("Error al obtener datos iniciales:", err);
@@ -113,22 +122,25 @@ const Busqueda = () => {
 
       setResults(resultadosConFiguras);
 
+      //Refresh
+      setSearchCriteria({
+        categoria: "",
+        marca: "",
+        modelo: "",
+        talle: "",
+        figurasSuperiorIzquierdo: [],
+        figurasSuperiorDerecho: [],
+        figurasCentral: [],
+        figurasInferiorIzquierdo: [],
+        figurasInferiorDerecho: [],
+      });
+
     } catch (error) {
       console.error("Error en la búsqueda:", error);
       setError("Error al realizar la búsqueda");
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const fetchFiguras = () => {
-    axios.get(API_URLS.FORMAS)
-      .then((response) => {
-        setFiguras(response.data.map(f => f.nombre));
-      })
-      .catch((error) => {
-        console.error("Error al obtener figuras:", error);
-      });
   };
 
   const exportarPDF = () => {
@@ -177,22 +189,6 @@ const Busqueda = () => {
   doc.save(nombreFinal);
 };
 
-  if (mostrarFiguraForm) {
-    return (
-      <motion.div
-        className="p-6"
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-      >
-        <FiguraForm 
-          onClose={() => setMostrarFiguraForm(false)} 
-          onUpdateFiguras={fetchFiguras}
-        />
-      </motion.div>
-    );
-  }
-
   return (
     <div className="bg-white p-8 rounded-2xl shadow-lg max-w-lg mx-auto transition hover:shadow-2xl">
       <h2 className="text-2xl font-bold text-blue-700 text-center mb-6">
@@ -206,24 +202,34 @@ const Busqueda = () => {
       )}
 
       <form onSubmit={handleSearch} className="space-y-4">
-        <div>
-          <label className="block text-sm font-semibold mb-1">Categoría:</label>
-          <select
-            name="categoria"
-            value={searchCriteria.categoria}
-            onChange={handleChange}
-            className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
-          >
-            <option value="">Seleccionar categoría</option>
-            <option value="Deportivo">Deportivo</option>
-            <option value="Deportivo">Casual</option>
-            <option value="Deportivo">formal</option>
-            <option value="Urbano">Urbano</option>
-            <option value="Trabajo">Trabajo</option>
-          </select>
-        </div>
+        {/* Categoría */}
+        <FigurasDropdown
+          title="Categoría"
+          options={categorias.map(c => c.nombre)}
+          selectedOptions={searchCriteria.categoria ? [searchCriteria.categoria] : []}
+          onChange={(selected) => setSearchCriteria(prev => ({ ...prev, categoria: selected[0] || "" }))}
+          multiple={false}
+        />
+
+        {/* Marca */}
+        <FigurasDropdown
+          title="Marca"
+          options={marcas.map(m => m.nombre)}
+          selectedOptions={searchCriteria.marca ? [searchCriteria.marca] : []}
+          onChange={(selected) => setSearchCriteria(prev => ({ ...prev, marca: selected[0] || "" }))}
+          multiple={false}
+        />
+
+        {/* Modelo */}
+        <FigurasDropdown
+          title="Modelo"
+          options={modelos.map(m => m.nombre)}
+          selectedOptions={searchCriteria.modelo ? [searchCriteria.modelo] : []}
+          onChange={(selected) => setSearchCriteria(prev => ({ ...prev, modelo: selected[0] || "" }))}
+          multiple={false}
+        />
         
-        {["marca", "modelo", "talle"].map((field) => (
+        {["talle"].map((field) => (
           <div key={field}>
             <label className="block text-sm font-semibold mb-1 capitalize">
               {field}:
@@ -256,14 +262,6 @@ const Busqueda = () => {
               }
             />
           ))}
-
-          <button
-            type="button"
-            onClick={() => setMostrarFiguraForm(true)}
-            className="mt-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white py-2 px-4 rounded-lg font-semibold hover:from-blue-700 hover:to-blue-800 transition duration-300 shadow-md"
-          >
-            Nueva Figura
-          </button>
         </div>
 
         <button
