@@ -10,6 +10,7 @@ export const API_URLS = {
   COLORES: `${API_BASE_URL}/colores/`,
   USUARIOS: `${API_BASE_URL}/usuarios/`,
   LOGIN: `${API_BASE_URL}/auth/login`,
+  IMPUTADOS: `${API_BASE_URL}/imputados`,
 };
 
 // Configuración de Google OAuth

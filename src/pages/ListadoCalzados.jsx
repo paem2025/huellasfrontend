@@ -23,10 +23,22 @@ const ListadoCalzados = () => {
 
   const [suelaData, setSuelaData] = useState(null);
   const [editSuela, setEditSuela] = useState("");
+  const [imputadoData, setImputadoData] = useState(null);
   const [marcas, setMarcas] = useState([]);
   const [modelos, setModelos] = useState([]);
   const [categorias, setCategorias] = useState([]);
   const [colores, setColores] = useState([]);
+  const [todosImputados, setTodosImputados] = useState([]);
+
+  // Nuevo estado para editar imputado
+  const [editImputado, setEditImputado] = useState({
+    id_imputado: null,
+    nombre: "",
+    dni: "",
+    direccion: "",
+    comisaria: "",
+    jurisdiccion: ""
+  });
 
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
@@ -68,79 +80,87 @@ const ListadoCalzados = () => {
     }
   };
 
+  const fetchTodosImputados = async () => {
+    try {
+      const response = await axios.get(`${API_URLS.CALZADOS}todos_imputados_con_calzados`);
+      setTodosImputados(response.data);
+    } catch (error) {
+      console.error("Error al obtener imputados:", error);
+    }
+  };
+
   useEffect(() => {
     fetchMarcas();
     fetchModelos();
     fetchCategorias();
     fetchColores();
+    fetchTodosImputados();
   }, []);
 
   const fetchCalzados = async () => {
-  try {
-    let endpoint = API_URLS.CALZADOS; 
-    let calzadosData;
+    try {
+      let endpoint = API_URLS.CALZADOS; 
+      let calzadosData;
 
-    if (filter === "dubitada") {
-      endpoint = `${API_URLS.CALZADOS}getAllDubitadas`;
-      const response = await axios.get(endpoint);
-      calzadosData = response.data;
-    } 
-    else if (filter === "indubitada_proveedor" || filter === "indubitada_comisaria") {
-      const response = await axios.get(API_URLS.CALZADOS);
-      calzadosData = response.data.filter(item => 
-        item.tipo_registro === filter
-      );
-    }
-    else {
-      const response = await axios.get(endpoint);
-      calzadosData = response.data;
-    }
-
-
-    const formattedData = calzadosData.map((item) => {
-      const marca =
-        marcas.find((m) => m.id_marca === item.id_marca)?.nombre ||
-        "Sin marca";
-      const modelo =
-        modelos.find((m) => m.id_modelo === item.id_modelo)?.nombre ||
-        "Sin modelo";
-      const categoria =
-        categorias.find((c) => c.id_categoria === item.id_categoria)
-          ?.nombre || "Sin categoría";
-
-      let coloresNombres = "Sin colores";
-      let idsColores = [];
-
-      if (Array.isArray(item.colores) && item.colores.length > 0) {
-        if (typeof item.colores[0] === "string") {
-          coloresNombres = item.colores.join(", ");
-          idsColores = item.colores
-            .map((nombre) => colores.find((c) => c.nombre === nombre)?.id_color)
-            .filter(Boolean);
-        } else {
-          coloresNombres = item.colores.map((c) => c.nombre).join(", ");
-          idsColores = item.colores.map((c) => c.id_color);
-        }
+      if (filter === "dubitada") {
+        endpoint = `${API_URLS.CALZADOS}getAllDubitadas`;
+        const response = await axios.get(endpoint);
+        calzadosData = response.data;
+      } 
+      else if (filter === "indubitada_proveedor" || filter === "indubitada_comisaria") {
+        const response = await axios.get(API_URLS.CALZADOS);
+        calzadosData = response.data.filter(item => 
+          item.tipo_registro === filter
+        );
+      }
+      else {
+        const response = await axios.get(endpoint);
+        calzadosData = response.data;
       }
 
-      return {
-        id: item.id_calzado,
-        marca,
-        modelo,
-        talle: item.talle,
-        alto: item.alto,
-        ancho: item.ancho,
-        medidas: `${item.alto}cm x ${item.ancho}cm`,
-        colores: coloresNombres,
-        categoria,
-        tipo: item.tipo_registro,
-        // Guardar IDs para edición
-        id_marca: item.id_marca,
-        id_modelo: item.id_modelo,
-        id_categoria: item.id_categoria,
-        id_colores: idsColores,
-      };
-    });
+      const formattedData = calzadosData.map((item) => {
+        const marca =
+          marcas.find((m) => m.id_marca === item.id_marca)?.nombre ||
+          "Sin marca";
+        const modelo =
+          modelos.find((m) => m.id_modelo === item.id_modelo)?.nombre ||
+          "Sin modelo";
+        const categoria =
+          categorias.find((c) => c.id_categoria === item.id_categoria)
+            ?.nombre || "Sin categoría";
+
+        let coloresNombres = "Sin colores";
+        let idsColores = [];
+
+        if (Array.isArray(item.colores) && item.colores.length > 0) {
+          if (typeof item.colores[0] === "string") {
+            coloresNombres = item.colores.join(", ");
+            idsColores = item.colores
+              .map((nombre) => colores.find((c) => c.nombre === nombre)?.id_color)
+              .filter(Boolean);
+          } else {
+            coloresNombres = item.colores.map((c) => c.nombre).join(", ");
+            idsColores = item.colores.map((c) => c.id_color);
+          }
+        }
+
+        return {
+          id: item.id_calzado,
+          marca,
+          modelo,
+          talle: item.talle,
+          alto: item.alto,
+          ancho: item.ancho,
+          medidas: `${item.alto}cm x ${item.ancho}cm`,
+          colores: coloresNombres,
+          categoria,
+          tipo: item.tipo_registro,
+          id_marca: item.id_marca,
+          id_modelo: item.id_modelo,
+          id_categoria: item.id_categoria,
+          id_colores: idsColores,
+        };
+      });
 
       setCalzados(formattedData);
     } catch (error) {
@@ -154,16 +174,16 @@ const ListadoCalzados = () => {
   }, [filter, marcas, modelos, categorias, colores]);
 
   const handleEditCalzadoChange = (e) => {
-  if (e.target.name === "id_colores") {
-    const options = Array.from(e.target.selectedOptions);
-    const values = options.map((option) => parseInt(option.value));
-    setEditCalzado({ ...editCalzado, [e.target.name]: values });
-  } else if (e.target.name === "alto" || e.target.name === "ancho") {
-    setEditCalzado({ ...editCalzado, [e.target.name]: parseFloat(e.target.value) || null });
-  } else {
-    setEditCalzado({ ...editCalzado, [e.target.name]: e.target.value });
-  }
-};
+    if (e.target.name === "id_colores") {
+      const options = Array.from(e.target.selectedOptions);
+      const values = options.map((option) => parseInt(option.value));
+      setEditCalzado({ ...editCalzado, [e.target.name]: values });
+    } else if (e.target.name === "alto" || e.target.name === "ancho") {
+      setEditCalzado({ ...editCalzado, [e.target.name]: parseFloat(e.target.value) || null });
+    } else {
+      setEditCalzado({ ...editCalzado, [e.target.name]: e.target.value });
+    }
+  };
 
   const handleEditClick = (calzado) => {
     setEditId(calzado.id);
@@ -183,7 +203,6 @@ const ListadoCalzados = () => {
 
   const handleSaveEdit = async () => {
     try {
-
       const dataToSend = {
         alto: editCalzado.alto || null,
         ancho: editCalzado.ancho || null,
@@ -197,8 +216,6 @@ const ListadoCalzados = () => {
                   []
       };
 
-      console.log("Datos a enviar:", dataToSend); 
-
       const response = await axios.patch(
         `${API_URLS.CALZADOS}${editId}`,
         dataToSend,
@@ -209,16 +226,11 @@ const ListadoCalzados = () => {
         }
       );
 
-      console.log("Respuesta del servidor:", response.data);
       alert("Calzado actualizado exitosamente");
       setEditId(null);
       fetchCalzados();
     } catch (error) {
-      console.error("Detalles del error:", {
-        message: error.message,
-        response: error.response?.data,
-        config: error.config
-      });
+      console.error("Error al actualizar calzado:", error);
       alert(`Error al actualizar calzado: ${error.response?.data?.error || error.message}`);
     }
   };
@@ -233,28 +245,67 @@ const ListadoCalzados = () => {
     }
 
     try {
+      // Primero verificar si este calzado está asociado a un imputado
+      const relacion = todosImputados.find(item => 
+        item.calzados.some(calzado => calzado.id_calzado === idCalzado)
+      );
+      
+      // Eliminar el calzado
       await axios.delete(`${API_URLS.CALZADOS}${idCalzado}`);
+      
+      // Si estaba asociado a un imputado, eliminarlo también
+      if (relacion) {
+        await axios.delete(`${API_URLS.IMPUTADOS}${relacion.imputado.id_imputado}`);
+      }
+      
       alert("Calzado eliminado exitosamente");
       fetchCalzados();
+      fetchTodosImputados(); // Actualizar la lista de imputados
     } catch (error) {
       console.error("Error al eliminar calzado:", error);
       alert("Error al eliminar calzado");
     }
   };
 
-  const fetchSuelaPorCalzado = async (idCalzado) => {
+  const fetchSuelaPorCalzado = async (idCalzado, tipoRegistro) => {
     try {
-      const response = await axios.get(API_URLS.SUELAS);
-      const suela = response.data.find((s) => s.id_calzado === idCalzado);
-
+      // Obtener datos de la suela
+      const suelaResponse = await axios.get(API_URLS.SUELAS);
+      const suela = suelaResponse.data.find((s) => s.id_calzado === idCalzado);
+      
       if (suela) {
         setSuelaData(suela);
         setEditSuela(suela.descripcion_general || "");
       } else {
-        alert("No se encontró una suela para este calzado.");
+        setSuelaData(null);
+      }
+
+      // Si es indubitada comisaría, buscar imputado localmente
+      if (tipoRegistro === "indubitada_comisaria") {
+        const relacion = todosImputados.find(item => 
+          item.calzados.some(calzado => calzado.id_calzado === idCalzado)
+        );
+        
+        if (relacion) {
+          setImputadoData(relacion.imputado);
+          // Cerrar cualquier edición previa de imputado
+          setEditImputado({
+            id_imputado: null,
+            nombre: "",
+            dni: "",
+            direccion: "",
+            comisaria: "",
+            jurisdiccion: ""
+          });
+        } else {
+          setImputadoData(null);
+        }
+      } else {
+        setImputadoData(null);
       }
     } catch (error) {
-      console.error("Error al obtener suela:", error);
+      console.error("Error al obtener datos:", error);
+      alert("Error al cargar los datos adicionales");
     }
   };
 
@@ -264,10 +315,68 @@ const ListadoCalzados = () => {
       await axios.patch(`${API_URLS.SUELAS}${suelaData.id_suela}/partial`, patchData);
       alert("Descripción de suela actualizada correctamente.");
       setSuelaData(null);
+      setImputadoData(null);
     } catch (err) {
       console.error("Error al actualizar la suela:", err);
       alert("Error al actualizar la descripción de la suela.");
     }
+  };
+
+  // Funciones para manejar la edición del imputado
+  const handleEditImputadoClick = (imputado) => {
+    console.log("Editando imputado:", imputado); // Debug
+    setEditImputado({
+      id_imputado: imputado.id_imputado,
+      nombre: imputado.nombre,
+      dni: imputado.dni,
+      direccion: imputado.direccion,
+      comisaria: imputado.comisaria,
+      jurisdiccion: imputado.jurisdiccion
+    });
+    // Cerrar el modal de suela/imputado
+    setSuelaData(null);
+    setImputadoData(null);
+  };
+
+  const handleImputadoChange = (e) => {
+    setEditImputado({
+      ...editImputado,
+      [e.target.name]: e.target.value
+    });
+  };
+
+  const handleSaveImputado = async () => {
+    try {
+      const response = await axios.patch(
+        `${API_URLS.IMPUTADOS}${editImputado.id_imputado}`,
+        editImputado
+      );
+      
+      alert("Imputado actualizado exitosamente");
+      setEditImputado({
+        id_imputado: null,
+        nombre: "",
+        dni: "",
+        direccion: "",
+        comisaria: "",
+        jurisdiccion: ""
+      });
+      fetchTodosImputados();
+    } catch (error) {
+      console.error("Error al actualizar imputado:", error);
+      alert(`Error al actualizar imputado: ${error.response?.data?.error || error.message}`);
+    }
+  };
+
+  const handleCancelImputadoEdit = () => {
+    setEditImputado({
+      id_imputado: null,
+      nombre: "",
+      dni: "",
+      direccion: "",
+      comisaria: "",
+      jurisdiccion: ""
+    });
   };
 
   const filteredData = calzados.filter((item) => {
@@ -438,9 +547,9 @@ const ListadoCalzados = () => {
                       <FiTrash2 size={18} />
                     </button>
                     <button
-                      onClick={() => fetchSuelaPorCalzado(calzado.id)}
+                      onClick={() => fetchSuelaPorCalzado(calzado.id, calzado.tipo)}
                       className="text-blue-600 hover:text-blue-900"
-                      title="Ver suela"
+                      title="Ver detalles"
                     >
                       <FiEye size={18} />
                     </button>
@@ -456,12 +565,12 @@ const ListadoCalzados = () => {
                 onClick={() => setCurrentPage(num)}
                 className={`px-3 py-1 rounded ${
                   currentPage === num ? "bg-purple-600 text-white" : "bg-gray-200"
-      }`}
-    >
-      {num}
-    </button>
-  ))}
-</div>
+                }`}
+              >
+                {num}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Modal editar calzado */}
@@ -471,7 +580,6 @@ const ListadoCalzados = () => {
               <h2 className="text-xl font-semibold mb-4">Editar Calzado</h2>
               <div className="grid grid-cols-1 gap-4">
                 
-                {/* Marca - Reemplazado con FigurasDropdown */}
                 <FigurasDropdown
                   title="Marca"
                   options={marcas.map(m => m.nombre)}
@@ -484,7 +592,6 @@ const ListadoCalzados = () => {
                   required
                 />
 
-                {/* Modelo - Reemplazado con FigurasDropdown */}
                 <FigurasDropdown
                   title="Modelo"
                   options={modelos.map(m => m.nombre)}
@@ -497,7 +604,6 @@ const ListadoCalzados = () => {
                   required
                 />
 
-                {/* Categoría - Reemplazado con FigurasDropdown */}
                 <FigurasDropdown
                   title="Categoría"
                   options={categorias.map(c => c.nombre)}
@@ -510,7 +616,6 @@ const ListadoCalzados = () => {
                   required
                 />
 
-                {/* Colores - Reemplazado con FigurasDropdown (multiple) */}
                 <FigurasDropdown
                   title="Colores"
                   options={colores.map(c => c.nombre)}
@@ -525,7 +630,6 @@ const ListadoCalzados = () => {
                   required
                 />
 
-                {/* Tipo de Registro - Reemplazado con FigurasDropdown */}
                 <FigurasDropdown
                   title="Tipo de Registro"
                   options={["dubitada", "indubitada_proveedor", "indubitada_comisaria"]}
@@ -537,7 +641,6 @@ const ListadoCalzados = () => {
                   required
                 />
 
-                {/* Los inputs numéricos y botones se mantienen igual */}
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -600,14 +703,54 @@ const ListadoCalzados = () => {
           </div>
         )}
 
-        {/* Modal suela */}
+        {/* Modal suela e imputado */}
         {suelaData && (
           <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
             <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
-              <h2 className="text-xl font-semibold mb-4">Suela del Calzado</h2>
+              <h2 className="text-xl font-semibold mb-4">
+                {imputadoData ? "Detalles del Imputado y Suela" : "Suela del Calzado"}
+              </h2>
+              
+              {imputadoData && (
+                <div className="mb-6">
+                  <div className="flex justify-between items-center mb-2">
+                    <h3 className="text-lg font-medium">Datos del Imputado:</h3>
+                    <button
+                      onClick={() => handleEditImputadoClick(imputadoData)}
+                      className="text-yellow-600 hover:text-yellow-900"
+                      title="Editar imputado"
+                    >
+                      <FiEdit size={18} />
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <p className="text-sm font-medium text-gray-700">Nombre:</p>
+                      <p className="text-sm">{imputadoData.nombre}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-700">DNI:</p>
+                      <p className="text-sm">{imputadoData.dni}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-700">Dirección:</p>
+                      <p className="text-sm">{imputadoData.direccion}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-700">Comisaría:</p>
+                      <p className="text-sm">{imputadoData.comisaria}</p>
+                    </div>
+                    <div className="col-span-2">
+                      <p className="text-sm font-medium text-gray-700">Jurisdicción:</p>
+                      <p className="text-sm">{imputadoData.jurisdiccion}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Descripción General
+                  Descripción General de la Suela
                 </label>
                 <textarea
                   value={editSuela}
@@ -616,6 +759,7 @@ const ListadoCalzados = () => {
                   className="border p-2 rounded w-full"
                 />
               </div>
+              
               <div className="flex justify-end space-x-2 mt-4">
                 <button
                   onClick={guardarSuela}
@@ -624,11 +768,110 @@ const ListadoCalzados = () => {
                   Guardar
                 </button>
                 <button
-                  onClick={() => setSuelaData(null)}
+                  onClick={() => {
+                    setSuelaData(null);
+                    setImputadoData(null);
+                  }}
                   className="bg-gray-400 text-white px-4 py-2 rounded-lg hover:bg-gray-500"
                 >
-                  Cancelar
+                  Cerrar
                 </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Modal editar imputado */}
+        {editImputado.id_imputado && (
+          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+            <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
+              <h2 className="text-xl font-semibold mb-4">Editar Imputado</h2>
+              
+              <div className="grid grid-cols-1 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Nombre
+                  </label>
+                  <input
+                    type="text"
+                    name="nombre"
+                    value={editImputado.nombre}
+                    onChange={handleImputadoChange}
+                    className="border rounded p-2 w-full"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    DNI
+                  </label>
+                  <input
+                    type="text"
+                    name="dni"
+                    value={editImputado.dni}
+                    onChange={handleImputadoChange}
+                    className="border rounded p-2 w-full"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Dirección
+                  </label>
+                  <input
+                    type="text"
+                    name="direccion"
+                    value={editImputado.direccion}
+                    onChange={handleImputadoChange}
+                    className="border rounded p-2 w-full"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Comisaría
+                  </label>
+                  <input
+                    type="text"
+                    name="comisaria"
+                    value={editImputado.comisaria}
+                    onChange={handleImputadoChange}
+                    className="border rounded p-2 w-full"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Jurisdicción
+                  </label>
+                  <input
+                    type="text"
+                    name="jurisdiccion"
+                    value={editImputado.jurisdiccion}
+                    onChange={handleImputadoChange}
+                    className="border rounded p-2 w-full"
+                    required
+                  />
+                </div>
+
+                <div className="flex justify-end space-x-2 mt-4">
+                  <button
+                    onClick={handleSaveImputado}
+                    className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+                  >
+                    Guardar
+                  </button>
+                  <button
+                    onClick={handleCancelImputadoEdit}
+                    className="bg-gray-400 text-white px-4 py-2 rounded-lg hover:bg-gray-500"
+                  >
+                    Cancelar
+                  </button>
+                </div>
               </div>
             </div>
           </div>
