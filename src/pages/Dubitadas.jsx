@@ -300,7 +300,7 @@ const Dubitadas = () => {
         <button
           type="button"
           onClick={() => setMostrarCategoriaForm(true)}
-          className="mb-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white py-2 px-4 rounded-lg font-semibold hover:from-blue-700 hover:to-blue-800 transition duration-300 shadow-md"
+          className="mb-4 bg-gradient-to-r from-green-600 to-green-700 text-white py-2 px-4 rounded-lg font-semibold hover:from-blue-700 hover:to-blue-800 transition duration-300 shadow-md"
         >
           Nueva Categoría
         </button>
@@ -316,7 +316,7 @@ const Dubitadas = () => {
         <button
           type="button"
           onClick={() => setMostrarMarcaForm(true)}
-          className="mb-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white py-2 px-4 rounded-lg font-semibold hover:from-blue-700 hover:to-blue-800 transition duration-300 shadow-md"
+          className="mb-4 bg-gradient-to-r from-green-600 to-green-700 text-white py-2 px-4 rounded-lg font-semibold hover:from-blue-700 hover:to-blue-800 transition duration-300 shadow-md"
         >
           Nueva Marca
         </button>
@@ -332,7 +332,7 @@ const Dubitadas = () => {
         <button
           type="button"
           onClick={() => setMostrarModeloForm(true)}
-          className="mb-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white py-2 px-4 rounded-lg font-semibold hover:from-blue-700 hover:to-blue-800 transition duration-300 shadow-md"
+          className="mb-4 bg-gradient-to-r from-green-600 to-green-700 text-white py-2 px-4 rounded-lg font-semibold hover:from-blue-700 hover:to-blue-800 transition duration-300 shadow-md"
         >
           Nuevo Modelo
         </button>
@@ -348,7 +348,7 @@ const Dubitadas = () => {
         <button
           type="button"
           onClick={() => setMostrarColorForm(true)}
-          className="mb-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white py-2 px-4 rounded-lg font-semibold hover:from-blue-700 hover:to-blue-800 transition duration-300 shadow-md"
+          className="mb-4 bg-gradient-to-r from-green-600 to-green-700 text-white py-2 px-4 rounded-lg font-semibold hover:from-blue-700 hover:to-blue-800 transition duration-300 shadow-md"
         >
           Nuevo Color
         </button>
@@ -369,6 +369,15 @@ const Dubitadas = () => {
             <FigurasDropdown title="Cuadrante Inferior Izquierdo" options={figuras.map(f => f.nombre)} selectedOptions={formData.figurasInferiorIzquierdo} onChange={(selected) => setFormData(prev => ({ ...prev, figurasInferiorIzquierdo: selected }))} />
             <FigurasDropdown title="Cuadrante Inferior Derecho" options={figuras.map(f => f.nombre)} selectedOptions={formData.figurasInferiorDerecho} onChange={(selected) => setFormData(prev => ({ ...prev, figurasInferiorDerecho: selected }))} />
           
+          {/* Botón Nueva Figura */}
+          <button
+            type="button"
+            onClick={() => setMostrarFiguraForm(true)}
+            className="mt-3 bg-gradient-to-r from-green-600 to-green-700 text-white py-2 px-4 rounded-lg font-semibold hover:from-green-700 hover:to-green-800 transition duration-300 shadow-md"
+          >
+            Nueva Figura
+          </button>
+          
           {/* Campo para descripción general */}
           <div className="mt-4">
             <label className="block text-sm font-semibold mb-1">
@@ -384,14 +393,6 @@ const Dubitadas = () => {
             />
           </div>
           
-          {/* Botón Nueva Figura */}
-          <button
-            type="button"
-            onClick={() => setMostrarFiguraForm(true)}
-            className="mt-3 bg-gradient-to-r from-green-600 to-green-700 text-white py-2 px-4 rounded-lg font-semibold hover:from-green-700 hover:to-green-800 transition duration-300 shadow-md"
-          >
-            Nueva Figura
-          </button>
         </div>
 
         <button

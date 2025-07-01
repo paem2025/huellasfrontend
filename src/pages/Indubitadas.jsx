@@ -387,6 +387,16 @@ const Indubitadas = () => {
               <FigurasDropdown title="Cuadrante Central" options={figuras.map(f => f.nombre)} selectedOptions={formData.figurasCentral} onChange={(selected) => setFormData(prev => ({ ...prev, figurasCentral: selected }))} />
               <FigurasDropdown title="Cuadrante Inferior Izquierdo" options={figuras.map(f => f.nombre)} selectedOptions={formData.figurasInferiorIzquierdo} onChange={(selected) => setFormData(prev => ({ ...prev, figurasInferiorIzquierdo: selected }))} />
               <FigurasDropdown title="Cuadrante Inferior Derecho" options={figuras.map(f => f.nombre)} selectedOptions={formData.figurasInferiorDerecho} onChange={(selected) => setFormData(prev => ({ ...prev, figurasInferiorDerecho: selected }))} />
+
+            {/* Botón Nueva Figura */}
+            <button
+              type="button"
+              onClick={() => setMostrarFiguraForm(true)}
+              className="mt-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white py-2 px-4 rounded-lg font-semibold hover:from-blue-700 hover:to-blue-800 transition duration-300 shadow-md"
+            >
+              Nueva Figura
+            </button>
+          
           {/* Campo para descripción general */}
           <div className="mt-4">
             <label className="block text-sm font-semibold mb-1">
@@ -400,15 +410,9 @@ const Indubitadas = () => {
               className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
               rows="3"
             />
+            
           </div>
-            {/* Botón Nueva Figura */}
-            <button
-              type="button"
-              onClick={() => setMostrarFiguraForm(true)}
-              className="mt-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white py-2 px-4 rounded-lg font-semibold hover:from-blue-700 hover:to-blue-800 transition duration-300 shadow-md"
-            >
-              Nueva Figura
-            </button>
+            
           </div>
           <button
             type="submit"

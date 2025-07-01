@@ -26,7 +26,6 @@ const IndubitadasComisaria = () => {
     figurasInferiorDerecho: [],
     figurasInferiorIzquierdo: [],
     nombre: "",
-    apellido: "",
     dni: "",
     direccion: "",
     comisaria: "",
@@ -130,18 +129,27 @@ const IndubitadasComisaria = () => {
       }
 
       // Calzado
-      const calzadoRes = await axios.post(API_URLS.CALZADOS, {
-        id_categoria,
-        id_marca,
-        id_modelo,
-        talle: formData.talle,
-        alto: formData.alto,
-        ancho: formData.ancho,
-        id_colores: ids_colores,  
-        tipo_registro: "indubitada_comisaria",
+      const calzadoImputadoRes = await axios.post(`${API_URLS.CALZADOS}cargar_calzado_imputado`, {
+        imputado: {
+          nombre: formData.nombre,
+          dni: formData.dni,
+          direccion: formData.direccion,
+          comisaria: formData.comisaria,
+          jurisdiccion: formData.jurisdiccion,
+        },
+        calzado: {
+          id_categoria,
+          id_marca,
+          id_modelo,
+          talle: formData.talle,
+          alto: formData.alto,
+          ancho: formData.ancho,
+          id_colores: ids_colores,
+          tipo_registro: "indubitada_comisaria",
+        },
       });
 
-      const id_calzado = calzadoRes.data.calzado?.id_calzado;
+      const id_calzado = calzadoImputadoRes.data.calzado_id;
 
       if (!id_calzado) {
         alert("Error: no se recibió id_calzado del backend");
@@ -214,8 +222,7 @@ const IndubitadasComisaria = () => {
     { name: "talle", label: "Talle" },
     { name: "alto", label: "Alto" },
     { name: "ancho", label: "Ancho" },
-    { name: "nombre", label: "Nombre" },
-    { name: "apellido", label: "Apellido" },
+    { name: "nombre", label: "Nombre y Apellido" },
     { name: "dni", label: "DNI" },
     { name: "direccion", label: "Dirección" },
     { name: "comisaria", label: "Comisaría" },
@@ -310,13 +317,13 @@ const IndubitadasComisaria = () => {
           transition={{ duration: 0.6 }}
         >
       <div className="bg-white p-8 rounded-2xl shadow-lg max-w-2xl mx-auto transition hover:shadow-2xl">
-        <h2 className="text-2xl font-bold text-purple-700 text-center mb-6">
+        <h2 className="text-2xl font-bold text-blue-700 text-center mb-6">
           Registrar Huella Indubitada (Comisarías)
         </h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           
           <div className="space-y-6">
-            <h3 className="text-lg font-semibold text-purple-600">Datos del Calzado</h3>
+            <h3 className="text-lg font-semibold text-blue-600">Datos del Calzado</h3>
             {/* Datos del calzado */}
             
             {/* Categoría */}
@@ -422,6 +429,14 @@ const IndubitadasComisaria = () => {
                 <FigurasDropdown title="Cuadrante Inferior Izquierdo" options={figuras.map(f => f.nombre)} selectedOptions={formData.figurasInferiorIzquierdo} onChange={(selected) => setFormData(prev => ({ ...prev, figurasInferiorIzquierdo: selected }))} />
                 <FigurasDropdown title="Cuadrante Inferior Derecho" options={figuras.map(f => f.nombre)} selectedOptions={formData.figurasInferiorDerecho} onChange={(selected) => setFormData(prev => ({ ...prev, figurasInferiorDerecho: selected }))} />
             </div>
+            {/* Botón Nueva Figura */}
+            <button
+              type="button"
+              onClick={() => setMostrarFiguraForm(true)}
+              className="mb-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white py-2 px-4 rounded-lg font-semibold hover:from-blue-700 hover:to-blue-800 transition duration-300 shadow-md"
+            >
+              Nueva Figura
+            </button>
             
             {/* Descripción general de la suela */}
             <div className="mt-4">
@@ -437,20 +452,11 @@ const IndubitadasComisaria = () => {
                 rows="3"
               />
               </div>
-
-              {/* Botón Nueva Figura */}
-              <button
-                type="button"
-                onClick={() => setMostrarFiguraForm(true)}
-                className="mt-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white py-2 px-4 rounded-lg font-semibold hover:from-blue-700 hover:to-blue-800 transition duration-300 shadow-md"
-              >
-                Nueva Figura
-              </button>
           </div>
 
           {/* Datos imputados */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-purple-600">Datos del Imputado</h3>
+            <h3 className="text-lg font-semibold text-blue-600">Datos del Imputado</h3>
             {fields.slice(3, 9).map(({ name, label }) => (
               <div key={name}>
                 <label className="block text-sm font-semibold mb-1">{label}:</label>
@@ -461,7 +467,7 @@ const IndubitadasComisaria = () => {
                   onChange={handleChange}
                   placeholder={`Ingrese ${label.toLowerCase()}`}
                   className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 transition"
-                  //required
+                  required
                 />
               </div>
             ))}
