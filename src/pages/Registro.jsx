@@ -1,17 +1,19 @@
-// Registro.jsx
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { FaUserPlus } from "react-icons/fa";
+import axios from "axios";
 
 const Registro = () => {
   const [formData, setFormData] = useState({
     username: "",
     password: "",
     confirmPassword: "",
+    role: "user" // Rol por defecto
   });
 
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -19,47 +21,50 @@ const Registro = () => {
     setFormData({ ...formData, [name]: value.trim() });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    setLoading(true);
 
-    let { username, password, confirmPassword } = formData;
-    username = username.trim().toLowerCase();
+    const { username, password, confirmPassword } = formData;
 
     if (!username || !password || !confirmPassword) {
       setError("Todos los campos son obligatorios");
+      setLoading(false);
       return;
     }
 
-    if (password.length < 4) {
-      setError("La contraseña debe tener al menos 4 caracteres");
+    if (password.length < 6) {
+      setError("La contraseña debe tener al menos 6 caracteres");
+      setLoading(false);
       return;
     }
 
     if (password !== confirmPassword) {
       setError("Las contraseñas no coinciden");
+      setLoading(false);
       return;
     }
 
     try {
-      const existingUsers = JSON.parse(localStorage.getItem("users")) || [];
+      const response = await axios.post("http://localhost:5000/usuarios", {
+        username,
+        password,
+        role: formData.role
+      });
 
-      const userExists = existingUsers.some(
-        (user) => user.username === username
-      );
-
-      if (userExists) {
-        setError("El nombre de usuario ya está registrado");
-        return;
+      if (response.status === 201) {
+        navigate("/login", { replace: true, state: { registrationSuccess: true } });
       }
-
-      const newUser = { username, password, role: "operador" };
-      localStorage.setItem("users", JSON.stringify([...existingUsers, newUser]));
-
-      navigate("/login", { replace: true });
-    } catch (e) {
-      console.error("Error al registrar el usuario:", e);
-      setError("Ocurrió un error al guardar los datos");
+    } catch (error) {
+      console.error("Error al registrar el usuario:", error);
+      if (error.response) {
+        setError(error.response.data.error || "Error al registrar el usuario");
+      } else {
+        setError("Error de conexión con el servidor");
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -96,7 +101,7 @@ const Registro = () => {
               name="password"
               value={formData.password}
               onChange={handleChange}
-              placeholder="Ingrese una contraseña"
+              placeholder="Ingrese una contraseña (mínimo 6 caracteres)"
               required
               className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
             />
@@ -115,9 +120,10 @@ const Registro = () => {
           </div>
           <button
             type="submit"
-            className="w-full bg-gradient-to-r from-green-600 to-green-700 text-white py-3 rounded-lg font-semibold hover:from-green-700 hover:to-green-800 transition duration-300 shadow-md"
+            disabled={loading}
+            className={`w-full bg-gradient-to-r from-green-600 to-green-700 text-white py-3 rounded-lg font-semibold hover:from-green-700 hover:to-green-800 transition duration-300 shadow-md ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
           >
-            Registrarse
+            {loading ? 'Registrando...' : 'Registrarse'}
           </button>
         </form>
       </div>

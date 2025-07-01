@@ -12,12 +12,23 @@ const Login = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
+  // Función para determinar la ruta inicial según el rol
+    const getDefaultRoute = () => {
+      if (!user) return "/login";
+      
+      switch(user.role) {
+        case "admin": return "/user-management";
+        case "operador": return "/indubitadas";
+        case "user": return "/busqueda";
+        default: return "/login";
+      }
+    };
   // Redirigir si ya está autenticado
   useEffect(() => {
-    if (isAuthenticated && user) {
-      navigate("/indubitadas", { replace: true });
-    }
-  }, [isAuthenticated, user, navigate]);
+      if (isAuthenticated && user) {
+        navigate(getDefaultRoute(), { replace: true });
+      }
+    }, [isAuthenticated, user, navigate]);
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -41,7 +52,7 @@ const Login = () => {
       const result = await login(username, password);
       
       if (result.success) {
-        navigate("/indubitadas", { replace: true });
+        navigate(getDefaultRoute(), { replace: true });
       } else {
         setError(result.message);
       }

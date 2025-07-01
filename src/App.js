@@ -18,6 +18,7 @@ import Busqueda from "./pages/Busqueda";
 import Login from "./pages/Login";
 import Registro from "./pages/Registro";
 import ListadoCalzados from "./pages/ListadoCalzados";
+import UserManagement from "./pages/UserManagement";
 
 function App() {
   return (
@@ -41,7 +42,7 @@ function App() {
 
 // Navegación superior
 const Navigation = () => {
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, user, loading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -50,17 +51,43 @@ const Navigation = () => {
     return null;
   }
 
+  // Definir los enlaces disponibles para cada rol
+  const getLinksForRole = (role) => {
+    const commonLinks = [
+      { to: "/busqueda", label: "Búsqueda", roles: ["user", "operador", "admin"] },
+    ];
+    
+    const roleSpecificLinks = {
+      operador: [
+        { to: "/indubitadas", label: "Indubitadas", roles: ["operador", "admin"] },
+        { to: "/indubitadas-comisaria", label: "Indubitadas Comisarías", roles: ["operador", "admin"] },
+        { to: "/dubitadas", label: "Dubitadas", roles: ["operador", "admin"] },
+        { to: "/listado-calzados", label: "Listado de Calzados", roles: ["operador", "admin"] },
+      ],
+      admin: [
+        { to: "/user-management", label: "Gestión de Usuarios", roles: ["admin"] },
+      ],
+    };
+
+    return [
+      ...commonLinks,
+      ...(roleSpecificLinks[role] || []),
+    ].filter(link => link.roles.includes(role));
+  };
+
+  if (loading) {
+    return (
+      <nav className="flex justify-center mb-6 bg-white rounded-2xl shadow-lg p-4">
+        <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-blue-500"></div>
+      </nav>
+    );
+  }
+
   return (
     <nav className="flex justify-center flex-wrap gap-2 mb-6 bg-white rounded-2xl shadow-lg p-4">
       {isAuthenticated && (
         <>
-          {[
-            { to: "/indubitadas", label: "Indubitadas" },
-            { to: "/indubitadas-comisaria", label: "Indubitadas Comisarías" },
-            { to: "/dubitadas", label: "Dubitadas" },
-            { to: "/busqueda", label: "Búsqueda" },
-            { to: "/listado-calzados", label: "Listado de Calzados" }
-          ].map(({ to, label }) => (
+          {getLinksForRole(user?.role).map(({ to, label }) => (
             <NavLink
               key={to}
               to={to}
@@ -93,6 +120,27 @@ const Navigation = () => {
 // Rutas animadas y protegidas
 const AnimatedRoutes = () => {
   const location = useLocation();
+  const { isAuthenticated, user, loading } = useAuth();
+
+  // Función para determinar la ruta inicial según el rol
+  const getDefaultRoute = () => {
+    if (!isAuthenticated) return "/login";
+    
+    switch(user?.role) {
+      case "admin": return "/user-management";
+      case "operador": return "/indubitadas";
+      case "user": return "/busqueda";
+      default: return "/login";
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      </div>
+    );
+  }
 
   return (
     <AnimatePresence mode="wait">
@@ -104,7 +152,9 @@ const AnimatedRoutes = () => {
         transition={{ duration: 0.5 }}
       >
         <Routes location={location} key={location.pathname}>
-          <Route path="/" element={<Navigate to="/login" />} />
+          {/* Redirige a la ruta por defecto según el rol */}
+          <Route path="/" element={<Navigate to={getDefaultRoute()} replace />} />
+          
           <Route path="/login" element={<Login />} />
           <Route path="/registro" element={<Registro />} />
 
@@ -112,7 +162,7 @@ const AnimatedRoutes = () => {
           <Route
             path="/indubitadas"
             element={
-              <ProtectedRoute allowedRoles={["admin", "operador"]}>
+              <ProtectedRoute allowedRoles={["operador", "admin"]}>
                 <Indubitadas />
               </ProtectedRoute>
             }
@@ -120,7 +170,7 @@ const AnimatedRoutes = () => {
           <Route
             path="/indubitadas-comisaria"
             element={
-              <ProtectedRoute allowedRoles={["admin", "operador"]}>
+              <ProtectedRoute allowedRoles={["operador", "admin"]}>
                 <IndubitadasComisaria />
               </ProtectedRoute>
             }
@@ -128,7 +178,7 @@ const AnimatedRoutes = () => {
           <Route
             path="/dubitadas"
             element={
-              <ProtectedRoute allowedRoles={["admin", "operador"]}>
+              <ProtectedRoute allowedRoles={["operador", "admin"]}>
                 <Dubitadas />
               </ProtectedRoute>
             }
@@ -136,19 +186,28 @@ const AnimatedRoutes = () => {
           <Route
             path="/busqueda"
             element={
-              <ProtectedRoute allowedRoles={["admin", "operador"]}>
+              <ProtectedRoute allowedRoles={["user", "operador", "admin"]}>
                 <Busqueda />
               </ProtectedRoute>
             }
           />
           <Route
-            path="/listado-calzados" // Nueva ruta para el listado
+            path="/listado-calzados" 
             element={
-              <ProtectedRoute allowedRoles={["admin", "operador"]}>
+              <ProtectedRoute allowedRoles={["operador", "admin"]}>
                 <ListadoCalzados />
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/user-management"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <UserManagement />
+              </ProtectedRoute>
+            }
+          />
+          
           {/* Página no encontrada */}
           <Route
             path="*"
@@ -158,10 +217,10 @@ const AnimatedRoutes = () => {
                   404 — Página no encontrada
                 </h2>
                 <NavLink
-                  to="/login"
+                  to={getDefaultRoute()}
                   className="mt-4 inline-block text-blue-600 hover:underline"
                 >
-                  Volver al login
+                  Volver al inicio
                 </NavLink>
               </div>
             }
