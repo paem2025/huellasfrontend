@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
-import FiguraForm from "../components/FiguraForm";
 import FigurasDropdown from "../components/FigurasDropdown";
 import axios from "axios";
 import { API_URLS } from "../config/api";
@@ -13,7 +12,6 @@ const Busqueda = () => {
     marca: "",
     modelo: "",
     talle: "",
-    // Mantenemos los estados de figuras por si el backend las implementa en el futuro
     figurasSuperiorIzquierdo: [],
     figurasSuperiorDerecho: [],
     figurasCentral: [],
@@ -29,26 +27,29 @@ const Busqueda = () => {
   const [modelos, setModelos] = useState([]);
   const [categorias, setCategorias] = useState([]);
   const [allCalzados, setAllCalzados] = useState([]);
+  const [allSuelas, setAllSuelas] = useState([]);
 
   // Obtener todos los calzados al montar el componente
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
         setIsLoading(true);
-        const [figurasResponse, marcasResponse, modelosResponse, categoriasResponse, calzadosResponse] = await Promise.all([
+        const [figurasResponse, marcasResponse, modelosResponse, categoriasResponse, calzadosResponse, suelasResponse] = await Promise.all([
           axios.get(API_URLS.FORMAS),
           axios.get(API_URLS.MARCAS),
           axios.get(API_URLS.MODELOS),
           axios.get(API_URLS.CATEGORIAS),
-          axios.get(API_URLS.CALZADOS)
+          axios.get(API_URLS.CALZADOS),
+          axios.get(API_URLS.SUELAS),
         ]);
         
-        setFiguras(figurasResponse.data.map(f => f.nombre));
-        setMarcas(marcasResponse.data.map(m => m.nombre));         
-        setModelos(modelosResponse.data.map(m => m.nombre));    
-        setCategorias(categoriasResponse.data.map(c => c.nombre));
+        setFiguras(figurasResponse.data);
+        setMarcas(marcasResponse.data);         
+        setModelos(modelosResponse.data);    
+        setCategorias(categoriasResponse.data);
         
         setAllCalzados(calzadosResponse.data);
+        setAllSuelas(suelasResponse.data);
       } catch (err) {
         console.error("Error al obtener datos iniciales:", err);
         setError("Error al cargar los datos iniciales");
@@ -60,69 +61,108 @@ const Busqueda = () => {
     fetchInitialData();
   }, []);
 
+  const figurasMap = useMemo(() => {
+    const mapa = {};
+    figuras.forEach(f => {
+      mapa[f.id_forma] = f.nombre.toLowerCase();
+    });
+    return mapa;
+  }, [figuras]);
+
   const handleChange = (e) => {
     setSearchCriteria({ ...searchCriteria, [e.target.name]: e.target.value });
   };
 
-  const handleSearch = async (e) => {
+  const cuadrantesMap = {
+    figurasSuperiorIzquierdo: 1,
+    figurasSuperiorDerecho: 2,
+    figurasInferiorIzquierdo: 3,
+    figurasInferiorDerecho: 4,
+    figurasCentral: 5,
+  };
+
+  const handleSearch = (e) => {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
 
     try {
-      // Primero intentamos usar el endpoint de búsqueda si existe
-      try {
-        const params = new URLSearchParams();
-        if (searchCriteria.categoria) params.append('categoria', searchCriteria.categoria);
-        if (searchCriteria.marca) params.append('marca', searchCriteria.marca);
-        if (searchCriteria.modelo) params.append('modelo', searchCriteria.modelo);
-        if (searchCriteria.talle) params.append('talle', searchCriteria.talle);
+      const filtros = searchCriteria;
 
-        const response = await axios.get(`${API_URLS.CALZADOS}/buscar?${params.toString()}`);
-        setResults(response.data);
-        return;
-      } catch (apiError) {
-        console.log("Endpoint de búsqueda no disponible, filtrando localmente");
-      }
+      const resultadosFiltrados = allCalzados.filter((calzado) => {
+        if (filtros.categoria && calzado.categoria !== filtros.categoria) return false;
+        if (filtros.marca && calzado.marca !== filtros.marca) return false;
+        if (filtros.modelo && calzado.modelo !== filtros.modelo) return false;
+        if (filtros.talle && calzado.talle != filtros.talle) return false;
 
-      // Si el endpoint de búsqueda no funciona, filtramos localmente
-      const resultadosFiltrados = allCalzados.filter(calzado => {
-        // Filtro por categoría
-        if (searchCriteria.categoria && calzado.categoria !== searchCriteria.categoria) {
-          return false;
-        }
-        
-        // Filtro por marca
-        if (searchCriteria.marca && calzado.marca?.toLowerCase() !== searchCriteria.marca.toLowerCase()) {
-          return false;
-        }
-        
-        // Filtro por modelo
-        if (searchCriteria.modelo && calzado.modelo?.toLowerCase() !== searchCriteria.modelo.toLowerCase()) {
-          return false;
-        }
-        
-        // Filtro por talle
-        if (searchCriteria.talle && calzado.talle !== searchCriteria.talle) {
+        const suela = allSuelas.find((s) => s.id_calzado === calzado.id_calzado);
+
+        const hayFigurasSeleccionadas = Object.keys(cuadrantesMap).some(
+          (key) => filtros[key] && filtros[key].length > 0
+        );
+
+        if ((!suela || !suela.detalles) && hayFigurasSeleccionadas) {
           return false;
         }
 
-        return true;
+        // Filtrar por detalles de la suela 
+        for (const key in cuadrantesMap) {
+          const figurasBuscadas = filtros[key]; // array de figuras seleccionadas para cada cuadrante
+          if (!figurasBuscadas || figurasBuscadas.length === 0) continue;
+
+          // Obtener nombres de figuras en esa suela para cada cuadrante
+          const figurasEnSuela = suela.detalles
+            .filter(det => det.id_cuadrante === cuadrantesMap[key])
+            .map(det => figurasMap[det.id_forma]?.toLowerCase())
+            .filter(Boolean);
+
+          // Chequear que todas las figuras estén en la suela
+          const todasCoinciden = figurasBuscadas.every(figura =>
+            figurasEnSuela.includes(figura.toLowerCase())
+          );
+
+          if (!todasCoinciden) {
+            return false; 
+          }
+        }
+
+        return true; 
       });
 
-      // Mock de figuras para demostración (eliminar cuando el backend lo soporte)
-      const resultadosConFiguras = resultadosFiltrados.map((calzado, index) => ({
-        ...calzado,
-        figurasSuperiorIzquierdo: index % 2 === 0 ? ["Círculo"] : [],
-        figurasSuperiorDerecho: index % 3 === 0 ? ["Triángulo"] : [],
-        figurasCentral: [],
-        figurasInferiorIzquierdo: [],
-        figurasInferiorDerecho: index % 4 === 0 ? ["Rectángulo"] : [],
-      }));
+      // Agregar las figuras por cuadrante a cada resultado
+      const resultadosConFiguras = resultadosFiltrados.map((calzado) => {
+        const suela = allSuelas.find((s) => s.id_calzado === calzado.id_calzado);
+
+        const figurasPorCuadrante = {
+          figurasSuperiorIzquierdo: [],
+          figurasSuperiorDerecho: [],
+          figurasCentral: [],
+          figurasInferiorIzquierdo: [],
+          figurasInferiorDerecho: [],
+        };
+
+        if (suela && suela.detalles) {
+          suela.detalles.forEach((det) => {
+            const cuadranteNombre = Object.entries(cuadrantesMap).find(
+              ([key, id]) => id === det.id_cuadrante
+            )?.[0];
+
+            const nombreFigura = figurasMap[det.id_forma];
+            if (cuadranteNombre && nombreFigura) {
+              figurasPorCuadrante[cuadranteNombre].push(nombreFigura);
+            }
+          });
+        }
+
+        return {
+          ...calzado,
+          ...figurasPorCuadrante,
+        };
+      });
 
       setResults(resultadosConFiguras);
 
-      //Refresh
+      //Limpiar campos
       setSearchCriteria({
         categoria: "",
         marca: "",
@@ -134,9 +174,7 @@ const Busqueda = () => {
         figurasInferiorIzquierdo: [],
         figurasInferiorDerecho: [],
       });
-
     } catch (error) {
-      console.error("Error en la búsqueda:", error);
       setError("Error al realizar la búsqueda");
     } finally {
       setIsLoading(false);
@@ -205,7 +243,7 @@ const Busqueda = () => {
         {/* Categoría */}
         <FigurasDropdown
           title="Categoría"
-          options={categorias}
+          options={categorias.map(c => c.nombre)}
           selectedOptions={searchCriteria.categoria ? [searchCriteria.categoria] : []}
           onChange={(selected) => setSearchCriteria(prev => ({ ...prev, categoria: selected[0] || "" }))}
           multiple={false}
@@ -214,7 +252,7 @@ const Busqueda = () => {
         {/* Marca */}
         <FigurasDropdown
           title="Marca"
-          options={marcas}
+          options={marcas.map(m => m.nombre)}
           selectedOptions={searchCriteria.marca ? [searchCriteria.marca] : []}
           onChange={(selected) => setSearchCriteria(prev => ({ ...prev, marca: selected[0] || "" }))}
           multiple={false}
@@ -223,7 +261,7 @@ const Busqueda = () => {
         {/* Modelo */}
         <FigurasDropdown
           title="Modelo"
-          options={modelos}
+          options={modelos.map(m => m.nombre)}
           selectedOptions={searchCriteria.modelo ? [searchCriteria.modelo] : []}
           onChange={(selected) => setSearchCriteria(prev => ({ ...prev, modelo: selected[0] || "" }))}
           multiple={false}
@@ -252,7 +290,7 @@ const Busqueda = () => {
             <FigurasDropdown
               key={cuadrante}
               title={`Cuadrante ${cuadrante.replace(/([A-Z])/g, ' $1').trim()}`}
-              options={figuras}
+              options={figuras.map(f => f.nombre)}
               selectedOptions={searchCriteria[`figuras${cuadrante}`]}
               onChange={(selectedFigures) => 
                 setSearchCriteria(prev => ({
@@ -302,6 +340,13 @@ const Busqueda = () => {
                 <p><strong>Marca:</strong> {result.marca || 'No especificado'}</p>
                 <p><strong>Modelo:</strong> {result.modelo || 'No especificado'}</p>
                 <p><strong>Talle:</strong> {result.talle || 'No especificado'}</p>
+                <p><strong>Alto:</strong> {result.alto || "No especificado"}</p>
+                <p><strong>Ancho:</strong> {result.ancho || "No especificado"}</p>
+
+                {/* Mostrar colores solo si existen en los datos */}
+                {result.colores?.length > 0 && (
+                  <p><strong>Colores:</strong> {result.colores.join(", ")}</p>
+                )}
                 
                 {/* Mostrar figuras solo si existen en los datos */}
                 {result.figurasSuperiorIzquierdo?.length > 0 && (
@@ -319,6 +364,8 @@ const Busqueda = () => {
                 {result.figurasInferiorDerecho?.length > 0 && (
                   <p><strong>Inferior Derecho:</strong> {result.figurasInferiorDerecho.join(", ")}</p>
                 )}
+
+                <p><strong>Tipo Registro:</strong> {result.tipo_registro || 'No especificado'}</p>
               </div>
             ))}
           </div>
