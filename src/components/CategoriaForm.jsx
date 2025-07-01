@@ -38,8 +38,9 @@ const CategoriaForm = ({ onClose, onUpdateCategorias }) => {
         fetchCategorias();
         onUpdateCategorias();
       })
-      .catch(() => {
-        alert("Error al cargar categoría");
+      .catch((err) => {
+        const mensaje = err.response?.data?.error || "Error al cargar categoría";
+        alert(mensaje);
       });
   };
 

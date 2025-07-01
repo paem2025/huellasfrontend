@@ -36,8 +36,9 @@ const ModeloForm = ({ onClose, onUpdateModelos }) => {
         fetchModelos();
         onUpdateModelos();
       })
-      .catch(() => {
-        alert("Error al cargar modelo");
+      .catch((err) => {
+        const mensaje = err.response?.data?.error || "Error al cargar modelo";
+        alert(mensaje);
       });
   };
 

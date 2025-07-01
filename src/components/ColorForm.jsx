@@ -38,8 +38,9 @@ const ColorForm = ({ onClose, onUpdateColores }) => {
         fetchColores();
         onUpdateColores();
       })
-      .catch(() => {
-        alert("Error al cargar color");
+      .catch((err) => {
+        const mensaje = err.response?.data?.error || "Error al cargar color";
+        alert(mensaje);
       });
   };
 

@@ -34,8 +34,9 @@ const FiguraForm = ({ onClose, onUpdateFiguras }) => {
         fetchFiguras();
         if (onUpdateFiguras) onUpdateFiguras();
       })
-      .catch(() => {
-        alert("Error al cargar figura");
+      .catch((err) => {
+        const mensaje = err.response?.data?.error || "Error al cargar figura";
+        alert(mensaje);
       });
   };
 

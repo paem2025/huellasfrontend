@@ -34,8 +34,9 @@ const MarcaForm = ({ onClose, onUpdateMarcas }) => {
         fetchMarcas();
         onUpdateMarcas();
       })
-      .catch(() => {
-        alert("Error al cargar marca");
+      .catch((err) => {
+        const mensaje = err.response?.data?.error || "Error al cargar marca";
+        alert(mensaje);
       });
   };
 
