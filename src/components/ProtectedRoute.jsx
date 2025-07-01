@@ -11,11 +11,7 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
   }
 
   if (allowedRoles && !allowedRoles.includes(user.role)) {
-    return (
-      <div className="text-center py-20 text-red-600 font-semibold">
-        Acceso denegado: no tienes permiso para ver esta sección.
-      </div>
-    );
+    return <Navigate to={user.role === 'user' ? '/busqueda' : '/login'} replace />;
   }
 
   return children;

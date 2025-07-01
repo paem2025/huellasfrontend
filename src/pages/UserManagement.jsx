@@ -228,7 +228,7 @@ const UserManagement = () => {
       case "moderator":
         return "Moderador";
       default:
-        return "Usuario";
+        return "Operador";
     }
   };
 
@@ -316,8 +316,7 @@ const UserManagement = () => {
                   required
                   disabled={isSubmitting}
                 >
-                  <option value="user">Usuario</option>
-                  <option value="moderator">Moderador</option>
+                  <option value="user">Operador</option>
                   <option value="admin">Administrador</option>
                 </select>
               </div>

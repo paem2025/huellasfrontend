@@ -47,8 +47,11 @@ export const AuthProvider = ({ children }) => {
       }
     };
 
-    checkAuth();
-  }, []);
+    checkAuth().then(user => {
+    if (user && user.role === 'user') {
+    }
+  });
+}, []);
 
   const login = async (username, password) => {
     try {
