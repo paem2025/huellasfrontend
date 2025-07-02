@@ -388,6 +388,23 @@ const Busqueda = () => {
                       {result.colores?.length > 0 && (
                         <p><strong>Colores:</strong> {result.colores.join(", ")}</p>
                       )}
+
+                      {/* Mostrar figuras solo si existen en los datos */}
+                      {result.figurasSuperiorIzquierdo?.length > 0 && (
+                        <p><strong>Superior Izquierdo:</strong> {result.figurasSuperiorIzquierdo.join(", ")}</p>
+                      )}
+                      {result.figurasSuperiorDerecho?.length > 0 && (
+                        <p><strong>Superior Derecho:</strong> {result.figurasSuperiorDerecho.join(", ")}</p>
+                      )}
+                      {result.figurasCentral?.length > 0 && (
+                        <p><strong>Central:</strong> {result.figurasCentral.join(", ")}</p>
+                      )}
+                      {result.figurasInferiorIzquierdo?.length > 0 && (
+                        <p><strong>Inferior Izquierdo:</strong> {result.figurasInferiorIzquierdo.join(", ")}</p>
+                      )}
+                      {result.figurasInferiorDerecho?.length > 0 && (
+                        <p><strong>Inferior Derecho:</strong> {result.figurasInferiorDerecho.join(", ")}</p>
+                      )}
                     </div>
                   </div>
 
