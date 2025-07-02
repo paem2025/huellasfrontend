@@ -28,28 +28,38 @@ const Busqueda = () => {
   const [categorias, setCategorias] = useState([]);
   const [allCalzados, setAllCalzados] = useState([]);
   const [allSuelas, setAllSuelas] = useState([]);
+  const [todosImputados, setTodosImputados] = useState([]); // Todos los imputados con sus calzados
 
-  // Obtener todos los calzados al montar el componente
+  // Obtener todos los datos iniciales al montar el componente
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
         setIsLoading(true);
-        const [figurasResponse, marcasResponse, modelosResponse, categoriasResponse, calzadosResponse, suelasResponse] = await Promise.all([
+        const [
+          figurasResponse, 
+          marcasResponse, 
+          modelosResponse, 
+          categoriasResponse, 
+          calzadosResponse, 
+          suelasResponse,
+          imputadosResponse
+        ] = await Promise.all([
           axios.get(API_URLS.FORMAS),
           axios.get(API_URLS.MARCAS),
           axios.get(API_URLS.MODELOS),
           axios.get(API_URLS.CATEGORIAS),
           axios.get(API_URLS.CALZADOS),
           axios.get(API_URLS.SUELAS),
+          axios.get(`${API_URLS.CALZADOS}todos_imputados_con_calzados`)
         ]);
         
         setFiguras(figurasResponse.data);
         setMarcas(marcasResponse.data);         
         setModelos(modelosResponse.data);    
         setCategorias(categoriasResponse.data);
-        
         setAllCalzados(calzadosResponse.data);
         setAllSuelas(suelasResponse.data);
+        setTodosImputados(imputadosResponse.data);
       } catch (err) {
         console.error("Error al obtener datos iniciales:", err);
         setError("Error al cargar los datos iniciales");
@@ -81,7 +91,7 @@ const Busqueda = () => {
     figurasCentral: 5,
   };
 
-  const handleSearch = (e) => {
+  const handleSearch = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
@@ -93,10 +103,9 @@ const Busqueda = () => {
         if (filtros.categoria && calzado.categoria !== filtros.categoria) return false;
         if (filtros.marca && calzado.marca !== filtros.marca) return false;
         if (filtros.modelo && calzado.modelo !== filtros.modelo) return false;
-        if (filtros.talle && calzado.talle != filtros.talle) return false;
+        if (filtros.talle && calzado.talle !== filtros.talle) return false;
 
         const suela = allSuelas.find((s) => s.id_calzado === calzado.id_calzado);
-
         const hayFigurasSeleccionadas = Object.keys(cuadrantesMap).some(
           (key) => filtros[key] && filtros[key].length > 0
         );
@@ -161,8 +170,8 @@ const Busqueda = () => {
       });
 
       setResults(resultadosConFiguras);
-
-      //Limpiar campos
+      
+      // Limpiar campos
       setSearchCriteria({
         categoria: "",
         marca: "",
@@ -185,7 +194,7 @@ const Busqueda = () => {
     if (results.length === 0) {
       alert("No hay resultados para exportar.");
       return;
-  }
+    }
 
     const confirmar = window.confirm("¿Deseás descargar los resultados como PDF?");
     if (!confirmar) return;
@@ -197,41 +206,54 @@ const Busqueda = () => {
     doc.setFontSize(16);
     doc.text("Resultados de búsqueda de calzados", 14, 20);
 
+    // Definir columnas principales
     const columnas = [
-      "Categoría", "Marca", "Modelo", "Talle", "Alto", "Ancho", "Estado", "Colores",
+      "Categoría", "Marca", "Modelo", "Talle", "Alto", "Ancho", "Tipo Registro",
       "Sup. Izq.", "Sup. Der.", "Central", "Inf. Izq.", "Inf. Der.",
-  ];
+      "Imputado"
+    ];
 
-    const filas = results.map((r) => [
-      r.categoria || "—",
-      r.marca || "—",
-      r.modelo || "—",
-      r.talle || "—",
-      r.alto || "—",                        
-      r.ancho || "—",                        
-      r.tipo_registro || "—",
-      Array.isArray(r.colores) ? r.colores.join(", ") : (r.colores || "—"),
+    // Preparar datos para la tabla
+    const filas = results.map((r) => {
+      const relacion = todosImputados.find(item => 
+        item.calzados.some(calzado => calzado.id_calzado === r.id_calzado)
+      );
+      
+      const infoImputado = relacion && r.tipo_registro === "indubitada_comisaria" 
+        ? `${relacion.imputado.nombre || '—'} (DNI: ${relacion.imputado.dni || '—'})`
+        : "—";
 
-      r.figurasSuperiorIzquierdo?.join(", ") || "—",
-      r.figurasSuperiorDerecho?.join(", ") || "—",
-      r.figurasCentral?.join(", ") || "—",
-      r.figurasInferiorIzquierdo?.join(", ") || "—",
-      r.figurasInferiorDerecho?.join(", ") || "—",
-  ]);
+      return [
+        r.categoria || "—",
+        r.marca || "—",
+        r.modelo || "—",
+        r.talle || "—",
+        r.alto || "—",                        
+        r.ancho || "—", 
+        r.tipo_registro || "—",
+        r.figurasSuperiorIzquierdo?.join(", ") || "—",
+        r.figurasSuperiorDerecho?.join(", ") || "—",
+        r.figurasCentral?.join(", ") || "—",
+        r.figurasInferiorIzquierdo?.join(", ") || "—",
+        r.figurasInferiorDerecho?.join(", ") || "—",
+        infoImputado
+      ];
+    });
 
-  doc.autoTable({
-    startY: 30,
-    head: [columnas],
-    body: filas,
-    styles: { fontSize: 9 },
-    headStyles: { fillColor: [22, 78, 99] },
-  });
+    // Crear tabla principal
+    doc.autoTable({
+      startY: 30,
+      head: [columnas],
+      body: filas,
+      styles: { fontSize: 8 },
+      headStyles: { fillColor: [22, 78, 99] },
+    });
 
-  doc.save(nombreFinal);
-};
+    doc.save(nombreFinal);
+  };
 
   return (
-    <div className="bg-white p-8 rounded-2xl shadow-lg max-w-lg mx-auto transition hover:shadow-2xl">
+    <div className="bg-white p-8 rounded-2xl shadow-lg max-w-4xl mx-auto transition hover:shadow-2xl">
       <h2 className="text-2xl font-bold text-blue-700 text-center mb-6">
         Búsqueda de Huellas
       </h2>
@@ -325,11 +347,11 @@ const Busqueda = () => {
               ${results.length === 0
                 ? "bg-green-900 cursor-not-allowed text-white" 
                 : "bg-green-600 hover:bg-green-700 text-white" 
-    }`}
-    >
-      Exportar a PDF
-    </button>
-  </div>
+            }`}
+          >
+            Exportar a PDF
+          </button>
+        </div>
         
         {isLoading ? (
           <div className="text-center py-4">
@@ -337,40 +359,55 @@ const Busqueda = () => {
           </div>
         ) : results.length > 0 ? (
           <div className="space-y-3">
-            {results.map((result) => (
-              <div key={result.id_calzado || result.id} className="bg-blue-50 p-4 rounded-lg shadow-inner text-gray-700">
-                <p><strong>Categoría:</strong> {result.categoria || 'No especificado'}</p>
-                <p><strong>Marca:</strong> {result.marca || 'No especificado'}</p>
-                <p><strong>Modelo:</strong> {result.modelo || 'No especificado'}</p>
-                <p><strong>Talle:</strong> {result.talle || 'No especificado'}</p>
-                <p><strong>Alto:</strong> {result.alto || "No especificado"}</p>
-                <p><strong>Ancho:</strong> {result.ancho || "No especificado"}</p>
+            {results.map((result) => {
+              const relacion = todosImputados.find(item => 
+                item.calzados.some(calzado => calzado.id_calzado === result.id_calzado)
+              );
+              
+              return (
+                <div key={result.id_calzado} className="bg-blue-50 p-4 rounded-lg shadow-inner text-gray-700">
+                  {/* Información básica del calzado */}
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <p><strong>Categoría:</strong> {result.categoria || 'No especificado'}</p>
+                      <p><strong>Marca:</strong> {result.marca || 'No especificado'}</p>
+                      <p><strong>Modelo:</strong> {result.modelo || 'No especificado'}</p>
+                      <p><strong>Talle:</strong> {result.talle || 'No especificado'}</p>
+                      <p><strong>Tipo Registro:</strong> {result.tipo_registro || 'No especificado'}</p>
+                    </div>
+                  </div>
 
-                {/* Mostrar colores solo si existen en los datos */}
-                {result.colores?.length > 0 && (
-                  <p><strong>Colores:</strong> {result.colores.join(", ")}</p>
-                )}
-                
-                {/* Mostrar figuras solo si existen en los datos */}
-                {result.figurasSuperiorIzquierdo?.length > 0 && (
-                  <p><strong>Superior Izquierdo:</strong> {result.figurasSuperiorIzquierdo.join(", ")}</p>
-                )}
-                {result.figurasSuperiorDerecho?.length > 0 && (
-                  <p><strong>Superior Derecho:</strong> {result.figurasSuperiorDerecho.join(", ")}</p>
-                )}
-                {result.figurasCentral?.length > 0 && (
-                  <p><strong>Central:</strong> {result.figurasCentral.join(", ")}</p>
-                )}
-                {result.figurasInferiorIzquierdo?.length > 0 && (
-                  <p><strong>Inferior Izquierdo:</strong> {result.figurasInferiorIzquierdo.join(", ")}</p>
-                )}
-                {result.figurasInferiorDerecho?.length > 0 && (
-                  <p><strong>Inferior Derecho:</strong> {result.figurasInferiorDerecho.join(", ")}</p>
-                )}
-
-                <p><strong>Tipo Registro:</strong> {result.tipo_registro || 'No especificado'}</p>
-              </div>
-            ))}
+                  {/* Mostrar información del imputado si existe y es indubitada_comisaria */}
+                  {relacion && result.tipo_registro === "indubitada_comisaria" && (
+                    <div className="mt-3 p-3 bg-yellow-50 rounded-lg border border-yellow-200">
+                      <h4 className="font-bold text-yellow-800">Información del Imputado:</h4>
+                      <div className="grid grid-cols-2 gap-2">
+                        <div>
+                          <p className="text-sm font-medium text-gray-700">Nombre:</p>
+                          <p className="text-sm">{relacion.imputado.nombre || '—'}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-gray-700">DNI:</p>
+                          <p className="text-sm">{relacion.imputado.dni || '—'}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-gray-700">Dirección:</p>
+                          <p className="text-sm">{relacion.imputado.direccion || '—'}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-gray-700">Comisaría:</p>
+                          <p className="text-sm">{relacion.imputado.comisaria || '—'}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-gray-700">Jurisdicción:</p>
+                          <p className="text-sm">{relacion.imputado.jurisdiccion || '—'}</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         ) : (
           <p className="text-gray-600 text-center py-4">
