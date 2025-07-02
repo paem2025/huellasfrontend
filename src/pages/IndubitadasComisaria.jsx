@@ -457,7 +457,26 @@ const IndubitadasComisaria = () => {
           {/* Datos imputados */}
           <div className="space-y-4">
             <h3 className="text-lg font-semibold text-blue-600">Datos del Imputado</h3>
-            {fields.slice(3, 9).map(({ name, label }) => (
+
+            {/* Campo DNI con control de 8 dígitos */}
+            <div>
+              <label className="block text-sm font-semibold mb-1">DNI:</label>
+              <input
+                type="text"
+                name="dni"
+                value={formData.dni}
+                onChange={(e) => {
+                  const value = e.target.value.slice(0, 8);
+                  if (/^\d*$/.test(value)) {
+                    handleChange({ target: { name: "dni", value } });
+                  }
+                }}
+                placeholder="Ingrese dni"
+                className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 transition"
+                required
+              />
+            </div>
+            {fields.slice(3, 9).filter(({ name }) => name !== "dni").map(({ name, label }) => (
               <div key={name}>
                 <label className="block text-sm font-semibold mb-1">{label}:</label>
                 <input
