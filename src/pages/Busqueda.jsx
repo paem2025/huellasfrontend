@@ -12,6 +12,8 @@ const Busqueda = () => {
     marca: "",
     modelo: "",
     talle: "",
+    alto: "",
+    ancho: "",
     figurasSuperiorIzquierdo: [],
     figurasSuperiorDerecho: [],
     figurasCentral: [],
@@ -103,7 +105,9 @@ const Busqueda = () => {
         if (filtros.categoria && calzado.categoria !== filtros.categoria) return false;
         if (filtros.marca && calzado.marca !== filtros.marca) return false;
         if (filtros.modelo && calzado.modelo !== filtros.modelo) return false;
-        if (filtros.talle && calzado.talle !== filtros.talle) return false;
+        if (filtros.talle && Number(calzado.talle) !== Number(filtros.talle)) return false;
+        if (filtros.ancho && Number(calzado.ancho) !== Number(filtros.ancho)) return false;
+        if (filtros.alto && Number(calzado.alto) !== Number(filtros.alto)) return false;
 
         const suela = allSuelas.find((s) => s.id_calzado === calzado.id_calzado);
         const hayFigurasSeleccionadas = Object.keys(cuadrantesMap).some(
@@ -177,6 +181,8 @@ const Busqueda = () => {
         marca: "",
         modelo: "",
         talle: "",
+        alto: "",
+        ancho: "",
         figurasSuperiorIzquierdo: [],
         figurasSuperiorDerecho: [],
         figurasCentral: [],
@@ -293,7 +299,7 @@ const Busqueda = () => {
           multiple={false}
         />
         
-        {["talle"].map((field) => (
+        {["talle", "alto", "ancho"].map((field) => (
           <div key={field}>
             <label className="block text-sm font-semibold mb-1 capitalize">
               {field}:
