@@ -99,6 +99,11 @@ const IndubitadasComisaria = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (!/^\d{8}$/.test(formData.dni)) {
+      alert("Error: El DNI debe contener 8 digitos.");
+      return;
+    }
+
     try {
 
       if (!formData.categoria || formData.categoria.trim() === "" ||
