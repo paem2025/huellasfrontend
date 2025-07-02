@@ -208,7 +208,7 @@ const Busqueda = () => {
 
     // Definir columnas principales
     const columnas = [
-      "Categoría", "Marca", "Modelo", "Talle", "Alto", "Ancho", "Tipo Registro",
+      "Categoría", "Marca", "Modelo", "Talle", "Alto", "Ancho", "Tipo Registro","Colores",
       "Sup. Izq.", "Sup. Der.", "Central", "Inf. Izq.", "Inf. Der.",
       "Imputado"
     ];
@@ -231,6 +231,7 @@ const Busqueda = () => {
         r.alto || "—",                        
         r.ancho || "—", 
         r.tipo_registro || "—",
+        Array.isArray(r.colores) && r.colores.length > 0 ? r.colores.join(", ") : "—",
         r.figurasSuperiorIzquierdo?.join(", ") || "—",
         r.figurasSuperiorDerecho?.join(", ") || "—",
         r.figurasCentral?.join(", ") || "—",
@@ -374,6 +375,13 @@ const Busqueda = () => {
                       <p><strong>Modelo:</strong> {result.modelo || 'No especificado'}</p>
                       <p><strong>Talle:</strong> {result.talle || 'No especificado'}</p>
                       <p><strong>Tipo Registro:</strong> {result.tipo_registro || 'No especificado'}</p>
+                      <p><strong>Alto:</strong> {result.alto || "No especificado"}</p>
+                      <p><strong>Ancho:</strong> {result.ancho || "No especificado"}</p>
+
+                      {/* Mostrar colores solo si existen en los datos */}
+                      {result.colores?.length > 0 && (
+                        <p><strong>Colores:</strong> {result.colores.join(", ")}</p>
+                      )}
                     </div>
                   </div>
 
