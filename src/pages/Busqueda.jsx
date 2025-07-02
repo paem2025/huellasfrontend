@@ -193,12 +193,12 @@ const Busqueda = () => {
     const nombreArchivo = window.prompt("Ingresá el nombre del archivo PDF:", "resultados_calzados");
     const nombreFinal = nombreArchivo?.trim() ? `${nombreArchivo.trim()}.pdf` : "resultados_calzados.pdf";
     
-    const doc = new jsPDF();
+    const doc = new jsPDF({ orientation: "landscape" });
     doc.setFontSize(16);
     doc.text("Resultados de búsqueda de calzados", 14, 20);
 
     const columnas = [
-      "Categoría", "Marca", "Modelo", "Talle", "Colores",
+      "Categoría", "Marca", "Modelo", "Talle", "Alto", "Ancho", "Estado", "Colores",
       "Sup. Izq.", "Sup. Der.", "Central", "Inf. Izq.", "Inf. Der.",
   ];
 
@@ -207,6 +207,9 @@ const Busqueda = () => {
       r.marca || "—",
       r.modelo || "—",
       r.talle || "—",
+      r.alto || "—",                        
+      r.ancho || "—",                        
+      r.tipo_registro || "—",
       Array.isArray(r.colores) ? r.colores.join(", ") : (r.colores || "—"),
 
       r.figurasSuperiorIzquierdo?.join(", ") || "—",
