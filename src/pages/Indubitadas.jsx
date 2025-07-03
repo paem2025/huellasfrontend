@@ -368,7 +368,17 @@ const Indubitadas = () => {
             <div key={name} className="mb-4">
               <label className="block text-sm font-semibold mb-1">{label}:</label>
               <input
-                type="text"
+                type="number"
+                min={name === "talle" ? "1" : "0.01"}
+                step={name === "talle" ? "1" : "any"}
+                onKeyDown={(e) => {
+                  const blockedKeys = [".", ","];
+                  if (name === "talle") {
+                    if (blockedKeys.includes(e.key)) {
+                      e.preventDefault();
+                    }
+                  }
+                }}
                 name={name}
                 value={formData[name]}
                 onChange={handleChange}
