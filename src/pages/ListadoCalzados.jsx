@@ -240,33 +240,20 @@ const ListadoCalzados = () => {
   };
 
   const handleDeleteCalzado = async (idCalzado) => {
-    if (!window.confirm("¿Estás seguro de que deseas eliminar este calzado?")) {
-      return;
-    }
+  if (!window.confirm("¿Estás seguro de que deseas eliminar este calzado?")) return; 
 
     try {
-      // Primero verificar si este calzado está asociado a un imputado
-      const relacion = todosImputados.find(item => 
-        item.calzados.some(calzado => calzado.id_calzado === idCalzado)
-      );
-      
-      // Eliminar el calzado
-      await axios.delete(`${API_URLS.CALZADOS}${idCalzado}`);
-      
-      // Si estaba asociado a un imputado, eliminarlo también
-      if (relacion) {
-        await axios.delete(`${API_URLS.IMPUTADOS}${relacion.imputado.id_imputado}`);
-      }
-      
+    const relacion = todosImputados.find(item=>item.calzados.some(calzado=>calzado.id_calzado===idCalzado));
+    await axios.delete(`${API_URLS.CALZADOS}${idCalzado}`);
       alert("Calzado eliminado exitosamente");
       fetchCalzados();
-      fetchTodosImputados(); // Actualizar la lista de imputados
-    } catch (error) {
-      console.error("Error al eliminar calzado:", error);
-      alert("Error al eliminar calzado");
-    }
-  };
-
+      fetchTodosImputados();
+  } catch (error) {
+    console.error("Error al eliminar calzado:", error);
+    alert("Error al eliminar calzado. Verificá si el ID es correcto o si hay un problema en el servidor.");
+  } 
+  };  
+  
   const fetchSuelaPorCalzado = async (idCalzado, tipoRegistro) => {
     try {
       // Obtener datos de la suela
