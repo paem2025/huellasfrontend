@@ -106,14 +106,22 @@ const IndubitadasComisaria = () => {
 
     try {
 
-      if (!formData.categoria || formData.categoria.trim() === "" ||
-          !formData.marca || formData.marca.trim() === "" ||
-          !formData.modelo || formData.modelo.trim() === "" ||
-          !formData.colores || formData.colores.length === 0
-      ) {
-        alert("Error: Los campos categoría, marca, modelo y colores son obligatorios.");
+      if (!formData.categoria || formData.categoria.trim() === "") {
+        alert("El campo 'Categoría' es obligatorio.");
         return;
-      }
+  }
+      if (!formData.marca || formData.marca.trim() === "") {
+        alert("El campo 'Marca' es obligatorio.");
+        return;
+  }
+      if (!formData.modelo || formData.modelo.trim() === "") {
+        alert("El campo 'Modelo' es obligatorio.");
+        return;
+  }
+      if (!formData.colores || formData.colores.length === 0) {
+        alert("Debe seleccionar al menos un 'Color'.");
+        return;
+  }
 
       const categoriaObj = categorias.find(c => c.nombre.toLowerCase() === formData.categoria.toLowerCase());
       const id_categoria = categoriaObj?.id_categoria;
