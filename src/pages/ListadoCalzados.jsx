@@ -702,13 +702,6 @@ const ListadoCalzados = () => {
                 <div className="mb-6">
                   <div className="flex justify-between items-center mb-2">
                     <h3 className="text-lg font-medium">Datos del Imputado:</h3>
-                    <button
-                      onClick={() => handleEditImputadoClick(imputadoData)}
-                      className="text-yellow-600 hover:text-yellow-900"
-                      title="Editar imputado"
-                    >
-                      <FiEdit size={18} />
-                    </button>
                   </div>
                   <div className="grid grid-cols-2 gap-2">
                     <div>
