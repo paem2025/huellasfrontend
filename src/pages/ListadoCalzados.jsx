@@ -243,7 +243,6 @@ const ListadoCalzados = () => {
   if (!window.confirm("¿Estás seguro de que deseas eliminar este calzado?")) return; 
 
     try {
-    const relacion = todosImputados.find(item=>item.calzados.some(calzado=>calzado.id_calzado===idCalzado));
     await axios.delete(`${API_URLS.CALZADOS}${idCalzado}`);
       alert("Calzado eliminado exitosamente");
       fetchCalzados();
