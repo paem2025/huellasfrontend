@@ -4,6 +4,7 @@ import axios from "axios";
 import { FaUserCog, FaUserShield, FaUser, FaPlus, FaSearch } from "react-icons/fa";
 import { FiTrash2 } from "react-icons/fi";
 import { toast } from "react-toastify";
+import { API_URLS } from "../config/api";
 
 const UserManagement = () => {
   const [users, setUsers] = useState([]);
@@ -36,7 +37,7 @@ const UserManagement = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/usuarios", {
+        const response = await axios.get(API_URLS.USUARIOS, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`
           }
@@ -64,7 +65,7 @@ const UserManagement = () => {
     if (!window.confirm("¿Estás seguro de que quieres eliminar este usuario?")) return;
 
     try {
-      await axios.delete(`http://localhost:5000/usuarios/${userId}`, {
+      await axios.delete(`${API_URLS.USUARIOS}${userId}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`
         }
@@ -144,7 +145,7 @@ const UserManagement = () => {
       const { confirmPassword, ...userData } = addFormData;
       
       const response = await axios.post(
-        "http://localhost:5000/usuarios", 
+        API_URLS.USUARIOS,
         userData,
         {
           headers: {
@@ -157,7 +158,7 @@ const UserManagement = () => {
       if (response.status === 201) {
         toast.success("Usuario creado exitosamente");
         
-        const usersResponse = await axios.get("http://localhost:5000/usuarios", {
+        const usersResponse = await axios.get(API_URLS.USUARIOS, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`
           }
