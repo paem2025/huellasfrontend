@@ -19,4 +19,4 @@ export const GOOGLE_CONFIG = {
   SCOPES: ["openid", "profile", "email"],
 };
 
-export { API_BASE_URL }; 
+export { API_BASE_URL };
