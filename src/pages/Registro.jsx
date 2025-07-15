@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { FaUserPlus } from "react-icons/fa";
 import axios from "axios";
+import { API_URLS } from "../config/api";
 
 const Registro = () => {
   const [formData, setFormData] = useState({
@@ -47,7 +48,7 @@ const Registro = () => {
     }
 
     try {
-      const response = await axios.post("http://localhost:5000/usuarios", {
+      const response = await axios.post(API_URLS.USUARIOS, {
         username,
         password,
         role: formData.role

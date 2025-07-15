@@ -249,10 +249,24 @@ const ListadoCalzados = () => {
       fetchTodosImputados();
   } catch (error) {
     console.error("Error al eliminar calzado:", error);
-    alert("Error al eliminar calzado. Verificá si el ID es correcto o si hay un problema en el servidor.");
-  } 
-  };  
-  
+    let errorMessage="Error al eliminar calzado. Verificá si el ID es correcto o si hay un problema en el servidor.";
+
+      // Si el error viene del backend y es un error de respuesta
+      if (error.response && error.response.data && error.response.data.error) {
+        // Verifica si el error es por clave foránea
+        if (error.response.data.error.includes("foreign key constraint fails") || error.response.data.error.includes("Cannot delete or update a parent row")) {
+          errorMessage = "No se puede eliminar este calzado porque tiene datos asociados (ej. suelas, imputados). Asegúrate de eliminar primero los datos dependientes.";
+        } else {
+          errorMessage = error.response.data.error; // Usa el mensaje específico del backend
+        }
+      } else if (error.message) {
+        errorMessage = `Error de red o conexión: ${error.message}`;
+      }
+      
+      alert(errorMessage); // Muestra el mensaje de error mejorado
+    }
+  };
+
   const fetchSuelaPorCalzado = async (idCalzado, tipoRegistro) => {
     try {
       // Obtener datos de la suela
